@@ -1,0 +1,876 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>非暴力沟通练习板</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@400;500;700;800&display=swap');
+
+      :root {
+        --bg-1: #fff4da;
+        --bg-2: #dbf4ec;
+        --ink: #22303a;
+        --muted: #5f7280;
+        --panel: rgba(255, 255, 255, 0.78);
+        --line: rgba(34, 48, 58, 0.18);
+        --chip: #f9eee2;
+        --chip-active: #ffd6a8;
+        --teal: #0f766e;
+        --orange: #d97706;
+        --danger: #b91c1c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: 'Noto Sans SC', sans-serif;
+        background:
+          radial-gradient(circle at 8% 14%, rgba(255, 181, 118, 0.35), transparent 32%),
+          radial-gradient(circle at 86% 84%, rgba(79, 172, 154, 0.3), transparent 35%),
+          linear-gradient(150deg, var(--bg-1), var(--bg-2));
+        padding: 18px;
+      }
+
+      .app {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+        border-radius: 24px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        backdrop-filter: blur(16px);
+        box-shadow: 0 26px 70px rgba(20, 39, 57, 0.16);
+        overflow: hidden;
+      }
+
+      .hero {
+        padding: 24px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      h1 {
+        margin: 0;
+        font-family: 'ZCOOL XiaoWei', serif;
+        font-size: clamp(34px, 4.4vw, 52px);
+        letter-spacing: 1px;
+        line-height: 1;
+      }
+
+      .subtitle {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        border: 1px solid transparent;
+        border-radius: 11px;
+        padding: 9px 13px;
+        font-size: 14px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 180ms ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      .btn-main {
+        background: linear-gradient(135deg, #0f766e, #14b8a6);
+        color: #fff;
+      }
+
+      .btn-plain {
+        background: #fff;
+        color: #1f2937;
+        border-color: var(--line);
+      }
+
+      .layout {
+        padding: 18px;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 1.08fr 0.92fr;
+      }
+
+      .panel {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 16px;
+        background: rgba(255, 255, 255, 0.72);
+        animation: fadeUp 420ms ease both;
+      }
+
+      .panel:nth-child(2) {
+        animation-delay: 80ms;
+      }
+
+      .step {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .step-head {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .step-num {
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: #fde68a;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .step-title {
+        margin: 0;
+        font-size: 17px;
+      }
+
+      .step-tip {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      textarea,
+      input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        font: inherit;
+        color: var(--ink);
+        background: #fff;
+      }
+
+      textarea {
+        min-height: 78px;
+        resize: vertical;
+        line-height: 1.48;
+        padding: 10px 12px;
+      }
+
+      input {
+        padding: 10px 12px;
+      }
+
+      .chip-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        background: var(--chip);
+        border: 1px solid rgba(34, 48, 58, 0.16);
+        border-radius: 999px;
+        padding: 5px 11px;
+        font-size: 13px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .chip.active {
+        background: var(--chip-active);
+        border-color: #f59e0b;
+        color: #7c2d12;
+      }
+
+      .inline-hint {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .check-line {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 4px;
+        font-size: 13px;
+      }
+
+      .badge {
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 2px 9px;
+      }
+
+      .ok {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .warn {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .bad {
+        background: #fee2e2;
+        color: var(--danger);
+      }
+
+      .result-box {
+        border: 1px solid rgba(15, 118, 110, 0.25);
+        border-radius: 14px;
+        padding: 13px;
+        background: linear-gradient(150deg, rgba(20, 184, 166, 0.08), rgba(255, 255, 255, 0.9));
+        display: grid;
+        gap: 8px;
+        min-height: 126px;
+      }
+
+      .result-title {
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .result-text {
+        margin: 0;
+        line-height: 1.62;
+        font-size: 15px;
+      }
+
+      .tiny {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .divider {
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--line), transparent);
+        margin: 12px 0;
+      }
+
+      .rule-list {
+        margin: 0;
+        padding-left: 18px;
+        display: grid;
+        gap: 6px;
+        color: #334155;
+        font-size: 14px;
+      }
+
+      .timer {
+        margin-top: 14px;
+        border-radius: 14px;
+        border: 1px solid var(--line);
+        background: #f8fafc;
+        padding: 12px;
+      }
+
+      .timer-time {
+        margin: 0;
+        font-size: 34px;
+        font-weight: 800;
+        letter-spacing: 2px;
+      }
+
+      .timer-bar {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #e2e8f0;
+        overflow: hidden;
+        margin: 8px 0 10px;
+      }
+
+      .timer-fill {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, #fb923c, #f97316);
+        transition: width 900ms linear;
+      }
+
+      .timer-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .soft {
+        background: #fff7ed;
+        color: #9a3412;
+        border-color: #fdba74;
+      }
+
+      .data-row {
+        display: grid;
+        gap: 9px;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 980px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 680px) {
+        body {
+          padding: 10px;
+        }
+
+        .hero,
+        .layout {
+          padding: 12px;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        .timer-time {
+          font-size: 30px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="hero">
+        <div>
+          <h1>非暴力沟通练习板</h1>
+          <p class="subtitle">把争吵从“对错”拉回“感受与需要”。四步法：观察 → 感受 → 需要 → 请求。</p>
+        </div>
+        <div class="hero-actions">
+          <button class="btn-main" id="randomScenarioBtn">随机情境</button>
+          <button class="btn-plain" id="clearBtn">清空输入</button>
+          <button class="btn-plain" id="copyBtn">复制表达句</button>
+          <button class="btn-plain" id="shareLinkBtn">生成分享链接</button>
+          <button class="btn-plain" id="nativeShareBtn">一键分享</button>
+        </div>
+      </header>
+
+      <section class="layout">
+        <article class="panel">
+          <div class="step">
+            <div class="step-head">
+              <span class="step-num">1</span>
+              <h2 class="step-title">观察（只说事实）</h2>
+            </div>
+            <p class="step-tip">描述可被录像记录的内容，不贴标签，不下结论。</p>
+            <textarea id="observation" placeholder="例：这周有 3 次我们约好 8 点通话，但都在 9 点后开始。"></textarea>
+            <div class="check-line">
+              <span class="badge warn" id="obvBadge">待检测</span>
+              <span id="obvHint" class="inline-hint">尽量避免“总是/从不/应该/根本”等评价词。</span>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="step-num">2</span>
+              <h2 class="step-title">感受（我此刻感觉）</h2>
+            </div>
+            <p class="step-tip">优先说情绪，不是指责。可多选 1-3 项。</p>
+            <div class="chip-grid" id="feelingChips"></div>
+            <input id="customFeeling" placeholder="也可以补充：例如 失落、慌张" />
+          </div>
+
+          <div class="step">
+            <div class="step-head">
+              <span class="step-num">3</span>
+              <h2 class="step-title">需要（我在乎什么）</h2>
+            </div>
+            <p class="step-tip">需要是普遍人性需求，不是“你必须”。可多选 1-3 项。</p>
+            <div class="chip-grid" id="needChips"></div>
+            <input id="customNeed" placeholder="也可以补充：例如 被理解、稳定感" />
+          </div>
+
+          <div class="step" style="margin-bottom: 0;">
+            <div class="step-head">
+              <span class="step-num">4</span>
+              <h2 class="step-title">请求（具体可执行）</h2>
+            </div>
+            <p class="step-tip">请求最好具体、可做到、有时间边界。</p>
+            <textarea id="request" placeholder="例：你愿意从下周开始，如果要晚到，提前 20 分钟发我消息吗？"></textarea>
+            <div class="check-line">
+              <span class="badge warn" id="reqBadge">待检测</span>
+              <span id="reqHint" class="inline-hint">句式参考：你愿意在（时间）做（具体动作）吗？</span>
+            </div>
+          </div>
+        </article>
+
+        <aside class="panel">
+          <div class="data-row">
+            <h3 class="result-title">你的 NVC 表达句</h3>
+            <div class="result-box">
+              <p class="result-text" id="resultText">当我观察到……时，我感到……，因为我需要……。你愿意……吗？</p>
+              <p class="tiny" id="resultTiny">补齐四步后会自动更新。</p>
+            </div>
+            <div class="result-box" style="min-height: 74px; border-color: rgba(30, 41, 59, 0.18); background: #fff;">
+              <p class="tiny" id="shareHint">点击“生成分享链接”，把当前内容打包成 URL。</p>
+              <input id="shareUrl" readonly value="" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="data-row">
+            <h3 class="result-title">同理倾听回声（给对方）</h3>
+            <div class="result-box" style="min-height: 108px; border-color: rgba(217, 119, 6, 0.28); background: linear-gradient(150deg, rgba(255, 237, 213, 0.78), rgba(255, 255, 255, 0.9));">
+              <p class="result-text" id="echoText">我听到你在说：当发生……你感到……，因为你很重视……，你希望我……对吗？</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="data-row">
+            <h3 class="result-title">对话规则</h3>
+            <ol class="rule-list">
+              <li>每次只讲一件事，避免翻旧账。</li>
+              <li>先复述对方，再说自己观点。</li>
+              <li>用“我感到/我需要”，替代“你就是/你应该”。</li>
+              <li>情绪过载时，先暂停 3 分钟再继续。</li>
+            </ol>
+          </div>
+
+          <section class="timer">
+            <h3 class="result-title" style="margin: 0;">3 分钟冷静计时</h3>
+            <p class="timer-time" id="timerText">03:00</p>
+            <div class="timer-bar">
+              <div class="timer-fill" id="timerFill"></div>
+            </div>
+            <div class="timer-actions">
+              <button class="btn-main" id="startTimerBtn">开始</button>
+              <button class="btn-plain" id="pauseTimerBtn">暂停</button>
+              <button class="btn-plain soft" id="resetTimerBtn">重置</button>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const feelings = ['委屈', '失落', '难过', '焦虑', '紧张', '沮丧', '生气', '孤单', '疲惫', '害怕', '困惑', '惭愧', '内疚', '欣慰', '安心', '开心', '期待', '感动', '被忽略'];
+      const needs = ['被看见', '被尊重', '理解', '安全感', '连接', '陪伴', '一致性', '稳定', '信任', '支持', '自由', '空间', '体贴', '合作', '诚实', '成长', '归属感', '轻松'];
+      const judgementWords = ['总是', '从不', '应该', '根本', '从来不', '你就', '你每次', '就是'];
+
+      const scenarios = [
+        {
+          observation: '这周你有两次在临睡前才告诉我今晚不通话。',
+          feeling: ['失落'],
+          need: ['连接', '一致性'],
+          request: '你愿意之后如果要取消，至少提前 30 分钟告诉我吗？'
+        },
+        {
+          observation: '昨天吃饭时我说话，你连续看了 4 次手机。',
+          feeling: ['被忽略', '难过'],
+          need: ['被看见', '尊重'],
+          request: '你愿意我们吃饭的 40 分钟把手机调静音吗？'
+        },
+        {
+          observation: '上周末家务分配后，厨房和地面最后都是我收尾。',
+          feeling: ['疲惫', '委屈'],
+          need: ['合作', '支持'],
+          request: '你愿意周日晚上一起列家务清单，并各自完成一半吗？'
+        }
+      ];
+
+      const observationEl = document.getElementById('observation');
+      const requestEl = document.getElementById('request');
+      const customFeelingEl = document.getElementById('customFeeling');
+      const customNeedEl = document.getElementById('customNeed');
+      const resultTextEl = document.getElementById('resultText');
+      const resultTinyEl = document.getElementById('resultTiny');
+      const echoTextEl = document.getElementById('echoText');
+      const obvBadge = document.getElementById('obvBadge');
+      const obvHint = document.getElementById('obvHint');
+      const reqBadge = document.getElementById('reqBadge');
+      const reqHint = document.getElementById('reqHint');
+      const shareUrlEl = document.getElementById('shareUrl');
+      const shareHintEl = document.getElementById('shareHint');
+
+      function renderChips(containerId, values) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = values
+          .map((value) => `<span class="chip" data-value="${value}">${value}</span>`)
+          .join('');
+
+        container.addEventListener('click', (event) => {
+          const chip = event.target.closest('.chip');
+          if (!chip) {
+            return;
+          }
+          const activeCount = container.querySelectorAll('.chip.active').length;
+          if (!chip.classList.contains('active') && activeCount >= 3) {
+            return;
+          }
+          chip.classList.toggle('active');
+          updateAll();
+        });
+      }
+
+      function getSelectedValues(containerId) {
+        const selected = [...document.querySelectorAll(`#${containerId} .chip.active`)].map((node) => node.dataset.value);
+        return selected;
+      }
+
+      function mergeList(baseList, extraText) {
+        const extra = extraText
+          .split(/[，,、\s]+/)
+          .map((item) => item.trim())
+          .filter(Boolean);
+        return [...baseList, ...extra].slice(0, 3);
+      }
+
+      function getState() {
+        return {
+          observation: observationEl.value.trim(),
+          request: requestEl.value.trim(),
+          customFeeling: customFeelingEl.value.trim(),
+          customNeed: customNeedEl.value.trim(),
+          selectedFeelings: getSelectedValues('feelingChips'),
+          selectedNeeds: getSelectedValues('needChips')
+        };
+      }
+
+      function setSelectedChips(containerId, values) {
+        const targets = new Set(values || []);
+        document.querySelectorAll(`#${containerId} .chip`).forEach((chip) => {
+          chip.classList.toggle('active', targets.has(chip.dataset.value));
+        });
+      }
+
+      function encodeStateToUrl() {
+        const state = getState();
+        const packed = encodeURIComponent(JSON.stringify(state));
+        const nextUrl = `${window.location.origin}${window.location.pathname}?data=${packed}`;
+        return nextUrl;
+      }
+
+      function applyState(rawState) {
+        const state = rawState || {};
+        observationEl.value = state.observation || '';
+        requestEl.value = state.request || '';
+        customFeelingEl.value = state.customFeeling || '';
+        customNeedEl.value = state.customNeed || '';
+        setSelectedChips('feelingChips', state.selectedFeelings || []);
+        setSelectedChips('needChips', state.selectedNeeds || []);
+        updateAll();
+      }
+
+      function readStateFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('data');
+        if (!raw) {
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(decodeURIComponent(raw));
+          applyState(parsed);
+          shareHintEl.textContent = '已从分享链接恢复内容。';
+        } catch {
+          shareHintEl.textContent = '分享链接解析失败，请重新生成。';
+        }
+      }
+
+      function normalizeRequestText(rawRequest) {
+        const clean = rawRequest.trim().replace(/[。]+$/, '');
+        if (!clean) {
+          return '在接下来做一个具体行动';
+        }
+        return clean;
+      }
+
+      function toQuestion(requestText) {
+        const clean = requestText.replace(/[？?]+$/, '');
+        if (/^(你愿意|你可以|可不可以|可以|是否愿意|能否)/.test(clean)) {
+          return `${clean}？`;
+        }
+        return `你愿意 ${clean} 吗？`;
+      }
+
+      function toActionPhrase(requestText) {
+        return requestText
+          .replace(/^(你愿意|你可以|可不可以|可以|是否愿意|能否)/, '')
+          .replace(/[？?。]/g, '')
+          .trim();
+      }
+
+      function checkObservation(text) {
+        if (!text.trim()) {
+          return { status: 'warn', label: '待检测', hint: '先写一个具体事实。' };
+        }
+
+        const hitWord = judgementWords.find((word) => text.includes(word));
+        if (hitWord) {
+          return {
+            status: 'bad',
+            label: '有评价',
+            hint: `检测到“${hitWord}”，可改成可验证的事实描述。`
+          };
+        }
+
+        return {
+          status: 'ok',
+          label: '较客观',
+          hint: '这段观察更接近事实描述。'
+        };
+      }
+
+      function checkRequest(text) {
+        const clean = text.trim();
+        if (!clean) {
+          return { status: 'warn', label: '待检测', hint: '写一个可执行请求。' };
+        }
+
+        const includesAction = /愿意|可以|是否|请|能否|一起/.test(clean);
+        const includesTime = /今天|明天|这周|下周|每周|点|分钟|晚|早|周末/.test(clean);
+        const tooAbsolute = /必须|立刻|马上/.test(clean);
+
+        if (tooAbsolute) {
+          return { status: 'bad', label: '偏命令', hint: '把“命令”改成“可拒绝的请求”。' };
+        }
+
+        if (includesAction && includesTime) {
+          return { status: 'ok', label: '较具体', hint: '请求足够清晰，利于被回应。' };
+        }
+
+        return { status: 'warn', label: '可更具体', hint: '加上时间和动作：例如“今晚 9 点前回我消息”。' };
+      }
+
+      function setBadge(el, status, label) {
+        el.textContent = label;
+        el.classList.remove('ok', 'warn', 'bad');
+        el.classList.add(status);
+      }
+
+      function buildSentence() {
+        const observation = observationEl.value.trim() || '发生了某件事';
+        const feelingList = mergeList(getSelectedValues('feelingChips'), customFeelingEl.value);
+        const needList = mergeList(getSelectedValues('needChips'), customNeedEl.value);
+        const requestText = normalizeRequestText(requestEl.value);
+        const actionPhrase = toActionPhrase(requestText) || '做一些调整';
+        const requestQuestion = toQuestion(requestText);
+
+        const feelingText = feelingList.length ? feelingList.join('、') : '有些情绪';
+        const needText = needList.length ? needList.join('、') : '一些重要需要';
+
+        const sentence = `当我观察到 ${observation} 时，我感到 ${feelingText}，因为我需要 ${needText}。${requestQuestion}`;
+        const echo = `我听到你在说：当 ${observation} 发生时，你感到 ${feelingText}，因为你很重视 ${needText}，你希望我 ${actionPhrase}，对吗？`;
+
+        return { sentence, echo, feelingList, needList };
+      }
+
+      function updateAll() {
+        const obvResult = checkObservation(observationEl.value);
+        setBadge(obvBadge, obvResult.status, obvResult.label);
+        obvHint.textContent = obvResult.hint;
+
+        const reqResult = checkRequest(requestEl.value);
+        setBadge(reqBadge, reqResult.status, reqResult.label);
+        reqHint.textContent = reqResult.hint;
+
+        const result = buildSentence();
+        resultTextEl.textContent = result.sentence;
+        echoTextEl.textContent = result.echo;
+
+        const missing = [];
+        if (!observationEl.value.trim()) missing.push('观察');
+        if (result.feelingList.length === 0) missing.push('感受');
+        if (result.needList.length === 0) missing.push('需要');
+        if (!requestEl.value.trim()) missing.push('请求');
+
+        resultTinyEl.textContent = missing.length
+          ? `还可以补充：${missing.join(' / ')}。`
+          : '四步完整，可以直接用于表达。';
+      }
+
+      function clearForm() {
+        observationEl.value = '';
+        requestEl.value = '';
+        customFeelingEl.value = '';
+        customNeedEl.value = '';
+        document.querySelectorAll('.chip.active').forEach((chip) => chip.classList.remove('active'));
+        updateAll();
+      }
+
+      function applyScenario(item) {
+        clearForm();
+        observationEl.value = item.observation;
+        requestEl.value = item.request;
+
+        item.feeling.forEach((value) => {
+          const chip = [...document.querySelectorAll('#feelingChips .chip')].find((node) => node.dataset.value === value);
+          if (chip) chip.classList.add('active');
+        });
+
+        item.need.forEach((value) => {
+          const chip = [...document.querySelectorAll('#needChips .chip')].find((node) => node.dataset.value === value);
+          if (chip) chip.classList.add('active');
+        });
+
+        updateAll();
+      }
+
+      async function copySentence() {
+        const text = resultTextEl.textContent.trim();
+        if (!text) {
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(text);
+          resultTinyEl.textContent = '已复制到剪贴板。';
+        } catch {
+          const fallback = document.createElement('textarea');
+          fallback.value = text;
+          document.body.appendChild(fallback);
+          fallback.select();
+          document.execCommand('copy');
+          fallback.remove();
+          resultTinyEl.textContent = '已复制到剪贴板。';
+        }
+      }
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          const fallback = document.createElement('textarea');
+          fallback.value = text;
+          document.body.appendChild(fallback);
+          fallback.select();
+          const ok = document.execCommand('copy');
+          fallback.remove();
+          return ok;
+        }
+      }
+
+      async function buildShareLink() {
+        const url = encodeStateToUrl();
+        shareUrlEl.value = url;
+        const copied = await copyToClipboard(url);
+        shareHintEl.textContent = copied ? '分享链接已复制。' : '已生成分享链接，可手动复制。';
+        return url;
+      }
+
+      async function nativeShare() {
+        const url = await buildShareLink();
+        if (!navigator.share) {
+          return;
+        }
+        try {
+          await navigator.share({
+            title: '非暴力沟通练习板',
+            text: '我们用这个页面练习 NVC 对话',
+            url
+          });
+          shareHintEl.textContent = '已调用系统分享。';
+        } catch {
+          shareHintEl.textContent = '分享已取消，链接仍可手动发送。';
+        }
+      }
+
+      renderChips('feelingChips', feelings);
+      renderChips('needChips', needs);
+
+      [observationEl, requestEl, customFeelingEl, customNeedEl].forEach((el) => {
+        el.addEventListener('input', updateAll);
+      });
+
+      document.getElementById('clearBtn').addEventListener('click', clearForm);
+      document.getElementById('copyBtn').addEventListener('click', copySentence);
+      document.getElementById('shareLinkBtn').addEventListener('click', buildShareLink);
+      document.getElementById('nativeShareBtn').addEventListener('click', nativeShare);
+      document.getElementById('randomScenarioBtn').addEventListener('click', () => {
+        const random = scenarios[Math.floor(Math.random() * scenarios.length)];
+        applyScenario(random);
+      });
+
+      const totalSeconds = 180;
+      let remainSeconds = totalSeconds;
+      let timerId = null;
+
+      const timerTextEl = document.getElementById('timerText');
+      const timerFillEl = document.getElementById('timerFill');
+
+      function formatTime(seconds) {
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        return `${m}:${s}`;
+      }
+
+      function paintTimer() {
+        timerTextEl.textContent = formatTime(remainSeconds);
+        const ratio = (remainSeconds / totalSeconds) * 100;
+        timerFillEl.style.width = `${Math.max(0, ratio)}%`;
+      }
+
+      function startTimer() {
+        if (timerId) {
+          return;
+        }
+
+        timerId = setInterval(() => {
+          remainSeconds -= 1;
+          paintTimer();
+          if (remainSeconds <= 0) {
+            clearInterval(timerId);
+            timerId = null;
+            remainSeconds = 0;
+            paintTimer();
+          }
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        clearInterval(timerId);
+        timerId = null;
+      }
+
+      function resetTimer() {
+        pauseTimer();
+        remainSeconds = totalSeconds;
+        paintTimer();
+      }
+
+      document.getElementById('startTimerBtn').addEventListener('click', startTimer);
+      document.getElementById('pauseTimerBtn').addEventListener('click', pauseTimer);
+      document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
+
+      readStateFromUrl();
+      updateAll();
+      paintTimer();
+    </script>
+  </body>
+</html>
