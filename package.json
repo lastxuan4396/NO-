@@ -1,0 +1,12 @@
+{
+  "name": "nvc-couple-share",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NVC couple communication page",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
