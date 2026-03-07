@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0f766e" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <title>非暴力沟通练习板</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@400;500;700;800&display=swap');
@@ -468,6 +470,45 @@
         color: #64748b;
       }
 
+      .history-panel {
+        border: 1px solid rgba(100, 116, 139, 0.24);
+        border-radius: 12px;
+        padding: 10px;
+        background: #f8fafc;
+      }
+
+      .history-list {
+        display: grid;
+        gap: 8px;
+        max-height: 260px;
+        overflow: auto;
+      }
+
+      .history-item {
+        border: 1px solid rgba(148, 163, 184, 0.3);
+        border-radius: 10px;
+        padding: 8px;
+        background: #fff;
+      }
+
+      .history-item b {
+        display: block;
+        font-size: 13px;
+        color: #0f766e;
+        margin-bottom: 4px;
+      }
+
+      .history-item p {
+        margin: 2px 0;
+        font-size: 12px;
+        color: #334155;
+        line-height: 1.45;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
       .mono {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       }
@@ -524,8 +565,13 @@
           <button class="btn-plain" id="restoreDraftBtn">恢复草稿</button>
           <button class="btn-plain" id="copyBtn">复制表达句</button>
           <button class="btn-plain" id="shareLinkBtn">生成压缩分享链接</button>
+          <button class="btn-plain" id="shortLinkBtn">生成后端短链</button>
           <button class="btn-plain" id="nativeShareBtn">一键分享</button>
           <button class="btn-warn" id="exportImageBtn">导出结果图片</button>
+          <button class="btn-plain" id="exportDataBtn">导出数据JSON</button>
+          <button class="btn-plain" id="importDataBtn">导入数据JSON</button>
+          <button class="btn-main hidden" id="installBtn">安装到桌面</button>
+          <input id="importDataInput" type="file" accept="application/json,.json" class="hidden" />
         </div>
       </header>
 
@@ -649,6 +695,19 @@
             </div>
           </div>
 
+          <div class="divider"></div>
+
+          <div class="history-panel">
+            <h3 class="result-title" style="margin: 0;">回合历史时间轴</h3>
+            <p class="tiny">按时间记录每次 A/B 对话轮次，可导出与导入。</p>
+            <div class="timer-actions" style="margin: 8px 0;">
+              <button class="btn-plain" id="clearHistoryBtn">清空历史</button>
+            </div>
+            <div id="historyList" class="history-list">
+              <p class="tiny">暂无历史记录。</p>
+            </div>
+          </div>
+
           <section class="timer">
             <h3 class="result-title" style="margin: 0;">3 分钟冷静计时</h3>
             <p class="timer-time" id="timerText">03:00</p>
@@ -741,6 +800,11 @@
 
       const STORAGE_KEY = 'nvc-couple-draft-v3';
       const METRICS_KEY = 'nvc-couple-metrics-v1';
+      const HISTORY_KEY = 'nvc-couple-history-v1';
+      const SHORTLINK_API_BASE =
+        window.location.hostname === 'nvc-couple-share.onrender.com'
+          ? 'https://nvc-couple-links.onrender.com'
+          : window.location.origin;
 
       const refs = {
         observation: document.getElementById('observation'),
@@ -777,11 +841,18 @@
         restoreDraftBtn: document.getElementById('restoreDraftBtn'),
         copyBtn: document.getElementById('copyBtn'),
         shareLinkBtn: document.getElementById('shareLinkBtn'),
+        shortLinkBtn: document.getElementById('shortLinkBtn'),
         nativeShareBtn: document.getElementById('nativeShareBtn'),
         exportImageBtn: document.getElementById('exportImageBtn'),
+        exportDataBtn: document.getElementById('exportDataBtn'),
+        importDataBtn: document.getElementById('importDataBtn'),
+        importDataInput: document.getElementById('importDataInput'),
+        installBtn: document.getElementById('installBtn'),
         startTimerBtn: document.getElementById('startTimerBtn'),
         pauseTimerBtn: document.getElementById('pauseTimerBtn'),
         resetTimerBtn: document.getElementById('resetTimerBtn'),
+        clearHistoryBtn: document.getElementById('clearHistoryBtn'),
+        historyList: document.getElementById('historyList'),
         mSessions: document.getElementById('mSessions'),
         mCompleted: document.getElementById('mCompleted'),
         mRate: document.getElementById('mRate'),
@@ -796,6 +867,8 @@
         completionCounted: false,
         suspendDraftSave: false,
         draftTimer: null,
+        deferredInstallPrompt: null,
+        history: loadHistory(),
         round: {
           enabled: false,
           phase: 'idle',
@@ -848,6 +921,59 @@
         refs.mRate.textContent = `${rate}%`;
       }
 
+      function loadHistory() {
+        try {
+          const raw = localStorage.getItem(HISTORY_KEY);
+          if (!raw) return [];
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed.slice(0, 200) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveHistory() {
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(appState.history.slice(0, 200)));
+      }
+
+      function addHistoryItem(item) {
+        appState.history.unshift(item);
+        appState.history = appState.history.slice(0, 200);
+        saveHistory();
+        renderHistory();
+      }
+
+      function escapeHtml(value) {
+        return String(value || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function renderHistory() {
+        if (!appState.history.length) {
+          refs.historyList.innerHTML = '<p class=\"tiny\">暂无历史记录。</p>';
+          return;
+        }
+
+        refs.historyList.innerHTML = appState.history
+          .map((entry) => {
+            const when = entry.createdAt ? new Date(entry.createdAt).toLocaleString('zh-CN') : '-';
+            const roundLabel = Number(entry.roundNo || 0) > 0 ? `第 ${entry.roundNo} 轮` : '历史记录';
+            return `
+              <article class=\"history-item\">
+                <b>${roundLabel} · ${when}</b>
+                <p><strong>A:</strong> ${escapeHtml(entry.speakerA || 'A')} · ${escapeHtml(entry.aSentence || '（无）')}</p>
+                <p><strong>复述:</strong> ${escapeHtml(entry.echo || '（无）')}</p>
+                <p><strong>B:</strong> ${escapeHtml(entry.speakerB || 'B')} · ${escapeHtml(entry.bSentence || '（无）')}</p>
+              </article>
+            `;
+          })
+          .join('');
+      }
+
       function renderChips(containerId, values) {
         const container = document.getElementById(containerId);
         container.innerHTML = values
@@ -898,12 +1024,19 @@
       }
 
       function checkObservation(text) {
-        if (!text.trim()) {
+        const clean = text.trim();
+        if (!clean) {
           return { status: 'warn', label: '待检测', hint: '先写一个具体事实。' };
         }
-        const hitWord = judgementWords.find((word) => text.includes(word));
+        const hitWord = judgementWords.find((word) => clean.includes(word));
         if (hitWord) {
-          return { status: 'bad', label: '有评价', hint: `检测到“${hitWord}”，可改成可验证的事实描述。` };
+          return { status: 'bad', label: '有评价', hint: `检测到“${hitWord}”，可改为“时间+事件+次数”。` };
+        }
+        if (/你让我|你害我|你根本不|你太|你总/.test(clean)) {
+          return { status: 'warn', label: '偏指责', hint: '尝试改成“当……发生时，我看到/听到……”句式。' };
+        }
+        if (!/[0-9一二三四五六七八九十]|次|分钟|点|昨天|今天|这周|上周/.test(clean)) {
+          return { status: 'warn', label: '可更具体', hint: '补充时间或次数，会更像可验证事实。' };
         }
         return { status: 'ok', label: '较客观', hint: '这段观察更接近事实描述。' };
       }
@@ -915,9 +1048,12 @@
         }
         const includesAction = /愿意|可以|是否|请|能否|一起/.test(clean);
         const includesTime = /今天|明天|这周|下周|每周|点|分钟|晚|早|周末/.test(clean);
-        const tooAbsolute = /必须|立刻|马上/.test(clean);
+        const tooAbsolute = /必须|立刻|马上|你得|不能再/.test(clean);
         if (tooAbsolute) {
-          return { status: 'bad', label: '偏命令', hint: '把“命令”改成“可拒绝的请求”。' };
+          return { status: 'bad', label: '偏命令', hint: '把“命令”改成“你愿意…吗”这种可协商请求。' };
+        }
+        if (/为什么你不|你应该|你得/.test(clean)) {
+          return { status: 'warn', label: '可改写', hint: '建议改写为“你愿意在XX时间做XX动作吗？”' };
         }
         if (includesAction && includesTime) {
           return { status: 'ok', label: '较具体', hint: '请求足够清晰，利于被回应。' };
@@ -1176,6 +1312,17 @@
           refs.roundHint.textContent = 'B 还没填写完整四步。';
           return;
         }
+        const aSnapshot = appState.round.snapshot || {};
+        const roundNo = Number(appState.metrics.roundSuccess || 0) + 1;
+        addHistoryItem({
+          roundNo,
+          createdAt: new Date().toISOString(),
+          speakerA: getSpeaker(refs.speakerA, 'A'),
+          speakerB: getSpeaker(refs.speakerB, 'B'),
+          aSentence: aSnapshot.sentence || '',
+          bSentence: result.sentence,
+          echo: refs.echoInput.value.trim()
+        });
         bumpMetric('roundSuccess');
         appState.round.phase = 'A_FILL';
         appState.round.snapshot = null;
@@ -1307,6 +1454,49 @@
         }
       }
 
+      function exportAllData() {
+        const data = {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          draft: getDraftState(),
+          metrics: appState.metrics,
+          history: appState.history
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nvc-data-${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      async function importAllDataFromFile(file) {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (data && data.draft) {
+          applyDraft(data.draft);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.draft));
+        }
+        if (data && data.metrics) {
+          appState.metrics = {
+            sessions: Number(data.metrics.sessions || 0),
+            completed: Number(data.metrics.completed || 0),
+            shares: Number(data.metrics.shares || 0),
+            exports: Number(data.metrics.exports || 0),
+            roundSuccess: Number(data.metrics.roundSuccess || 0)
+          };
+          saveMetrics();
+          renderMetrics();
+        }
+        if (data && Array.isArray(data.history)) {
+          appState.history = data.history.slice(0, 200);
+          saveHistory();
+          renderHistory();
+        }
+      }
+
       function uint8ToBase64Url(uint8) {
         let binary = '';
         const chunkSize = 0x8000;
@@ -1367,8 +1557,45 @@
         return url.toString();
       }
 
+      async function createShortLinkFromBackend() {
+        const payload = {
+          state: getState()
+        };
+        const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) {
+          throw new Error(`shortlink create failed: ${resp.status}`);
+        }
+        const data = await resp.json();
+        if (!data.id) {
+          throw new Error('shortlink id missing');
+        }
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.searchParams.set('sid', data.id);
+        return url.toString();
+      }
+
       async function decodeStateFromUrl() {
         const params = new URLSearchParams(window.location.search);
+        if (params.has('sid')) {
+          const sid = params.get('sid');
+          try {
+            const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks/${encodeURIComponent(sid)}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data && data.state) {
+                refs.shareHint.textContent = '已从后端短链恢复内容。';
+                return data.state;
+              }
+            }
+          } catch {
+            refs.shareHint.textContent = '后端短链读取失败，已跳过。';
+          }
+        }
         if (params.has('z')) {
           const payload = params.get('z');
           try {
@@ -1424,8 +1651,22 @@
         return url;
       }
 
+      async function buildShortShareLink() {
+        try {
+          const url = await createShortLinkFromBackend();
+          refs.shareUrl.value = url;
+          const copied = await copyToClipboard(url);
+          refs.shareHint.textContent = copied ? '已生成后端短链并复制。' : '已生成后端短链，可手动复制。';
+          bumpMetric('shares');
+          return url;
+        } catch {
+          refs.shareHint.textContent = '后端短链暂不可用，改用压缩链接。';
+          return buildShareLink();
+        }
+      }
+
       async function nativeShare() {
-        const url = await buildShareLink();
+        const url = await buildShortShareLink();
         if (!navigator.share) return;
         try {
           await navigator.share({
@@ -1436,6 +1677,44 @@
           refs.shareHint.textContent = '已调用系统分享。';
         } catch {
           refs.shareHint.textContent = '分享已取消，链接仍可手动发送。';
+        }
+      }
+
+      function setupInstallPrompt() {
+        window.addEventListener('beforeinstallprompt', (event) => {
+          event.preventDefault();
+          appState.deferredInstallPrompt = event;
+          refs.installBtn.classList.remove('hidden');
+        });
+        window.addEventListener('appinstalled', () => {
+          appState.deferredInstallPrompt = null;
+          refs.installBtn.classList.add('hidden');
+          refs.shareHint.textContent = '应用已安装到桌面。';
+        });
+      }
+
+      async function installApp() {
+        if (!appState.deferredInstallPrompt) {
+          refs.shareHint.textContent = '当前设备暂不支持安装，或已安装。';
+          return;
+        }
+        appState.deferredInstallPrompt.prompt();
+        try {
+          const choice = await appState.deferredInstallPrompt.userChoice;
+          refs.shareHint.textContent = choice.outcome === 'accepted' ? '已发起安装。' : '已取消安装。';
+        } catch {
+          refs.shareHint.textContent = '安装流程中断，可稍后再试。';
+        }
+        appState.deferredInstallPrompt = null;
+        refs.installBtn.classList.add('hidden');
+      }
+
+      async function registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        try {
+          await navigator.serviceWorker.register('/sw.js');
+        } catch {
+          refs.shareHint.textContent = '离线缓存初始化失败，不影响正常使用。';
         }
       }
 
@@ -1537,9 +1816,34 @@
         refs.restoreDraftBtn.addEventListener('click', restoreDraft);
         refs.copyBtn.addEventListener('click', copySentence);
         refs.shareLinkBtn.addEventListener('click', buildShareLink);
+        refs.shortLinkBtn.addEventListener('click', buildShortShareLink);
         refs.nativeShareBtn.addEventListener('click', nativeShare);
         refs.randomScenarioBtn.addEventListener('click', randomScenario);
         refs.exportImageBtn.addEventListener('click', exportAsImage);
+        refs.exportDataBtn.addEventListener('click', exportAllData);
+        refs.importDataBtn.addEventListener('click', () => refs.importDataInput.click());
+        refs.importDataInput.addEventListener('change', async (event) => {
+          const file = event.target.files && event.target.files[0];
+          if (!file) return;
+          try {
+            await importAllDataFromFile(file);
+            refs.shareHint.textContent = '已导入数据。';
+            updateAll();
+          } catch {
+            refs.shareHint.textContent = '导入失败，请确认 JSON 文件格式。';
+          } finally {
+            event.target.value = '';
+          }
+        });
+        refs.installBtn.addEventListener('click', installApp);
+        refs.clearHistoryBtn.addEventListener('click', () => {
+          if (!appState.history.length) return;
+          if (!window.confirm('确定清空历史记录吗？')) return;
+          appState.history = [];
+          saveHistory();
+          renderHistory();
+          refs.shareHint.textContent = '历史记录已清空。';
+        });
 
         refs.roundStartBtn.addEventListener('click', startRound);
         refs.roundLockBtn.addEventListener('click', lockRound);
@@ -1557,6 +1861,9 @@
         renderChips('needChips', needs);
         renderTemplateLibrary();
         attachEvents();
+        setupInstallPrompt();
+        renderHistory();
+        await registerServiceWorker();
 
         appState.metrics.sessions += 1;
         saveMetrics();

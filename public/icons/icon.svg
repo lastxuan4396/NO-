@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="NVC">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="512" height="512" rx="100" fill="url(#g)"/>
+  <g fill="#ffffff" font-family="Noto Sans SC, PingFang SC, Microsoft YaHei, sans-serif" text-anchor="middle">
+    <text x="256" y="228" font-size="140" font-weight="800">NVC</text>
+    <text x="256" y="306" font-size="40" font-weight="500">非暴力沟通</text>
+  </g>
+</svg>
