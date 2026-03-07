@@ -93,6 +93,12 @@
         transform: translateY(-1px);
       }
 
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+        transform: none;
+      }
+
       .btn-main {
         background: linear-gradient(135deg, #0f766e, #14b8a6);
         color: #fff;
@@ -102,6 +108,12 @@
         background: #fff;
         color: #1f2937;
         border-color: var(--line);
+      }
+
+      .btn-warn {
+        background: #fff7ed;
+        color: #9a3412;
+        border-color: #fdba74;
       }
 
       .layout {
@@ -198,6 +210,11 @@
         background: var(--chip-active);
         border-color: #f59e0b;
         color: #7c2d12;
+      }
+
+      .chip.disabled {
+        opacity: 0.48;
+        cursor: not-allowed;
       }
 
       .inline-hint {
@@ -314,15 +331,145 @@
         flex-wrap: wrap;
       }
 
-      .soft {
-        background: #fff7ed;
-        color: #9a3412;
-        border-color: #fdba74;
-      }
-
       .data-row {
         display: grid;
         gap: 9px;
+      }
+
+      .template-board {
+        border: 1px dashed rgba(217, 119, 6, 0.4);
+        border-radius: 12px;
+        padding: 10px;
+        background: #fff7ed;
+      }
+
+      .template-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px;
+      }
+
+      .template-card {
+        border: 1px solid rgba(251, 146, 60, 0.32);
+        border-radius: 10px;
+        background: #fff;
+        padding: 8px;
+        text-align: left;
+        display: grid;
+        gap: 4px;
+      }
+
+      .template-card b {
+        font-size: 13px;
+        color: #9a3412;
+      }
+
+      .template-card span {
+        font-size: 12px;
+        color: #475569;
+      }
+
+      .template-cats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .template-cat {
+        border-radius: 999px;
+        padding: 4px 10px;
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        font-size: 12px;
+        cursor: pointer;
+        background: #fff;
+      }
+
+      .template-cat.active {
+        background: #fed7aa;
+        border-color: #fb923c;
+        color: #9a3412;
+      }
+
+      .round-box {
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 12px;
+        padding: 10px;
+        background: #f8faff;
+        display: grid;
+        gap: 8px;
+      }
+
+      .round-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .round-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .round-status {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .round-speaker {
+        background: #e0e7ff;
+        color: #3730a3;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .round-phase {
+        background: #fef3c7;
+        color: #92400e;
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .metrics {
+        border: 1px solid rgba(15, 118, 110, 0.2);
+        border-radius: 12px;
+        padding: 10px;
+        background: #f0fdfa;
+      }
+
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .metric {
+        border: 1px solid rgba(14, 116, 144, 0.2);
+        border-radius: 10px;
+        background: #fff;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .metric b {
+        display: block;
+        font-size: 18px;
+        color: #0f766e;
+      }
+
+      .metric span {
+        font-size: 11px;
+        color: #64748b;
+      }
+
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       }
 
       @keyframes fadeUp {
@@ -342,7 +489,7 @@
         }
       }
 
-      @media (max-width: 680px) {
+      @media (max-width: 700px) {
         body {
           padding: 10px;
         }
@@ -356,8 +503,9 @@
           font-size: 34px;
         }
 
-        .timer-time {
-          font-size: 30px;
+        .round-row,
+        .metric-grid {
+          grid-template-columns: 1fr;
         }
       }
     </style>
@@ -368,13 +516,16 @@
         <div>
           <h1>非暴力沟通练习板</h1>
           <p class="subtitle">把争吵从“对错”拉回“感受与需要”。四步法：观察 → 感受 → 需要 → 请求。</p>
+          <p class="tiny" id="autosaveStatus">草稿自动保存：未保存</p>
         </div>
         <div class="hero-actions">
           <button class="btn-main" id="randomScenarioBtn">随机情境</button>
           <button class="btn-plain" id="clearBtn">清空输入</button>
+          <button class="btn-plain" id="restoreDraftBtn">恢复草稿</button>
           <button class="btn-plain" id="copyBtn">复制表达句</button>
-          <button class="btn-plain" id="shareLinkBtn">生成分享链接</button>
+          <button class="btn-plain" id="shareLinkBtn">生成压缩分享链接</button>
           <button class="btn-plain" id="nativeShareBtn">一键分享</button>
+          <button class="btn-warn" id="exportImageBtn">导出结果图片</button>
         </div>
       </header>
 
@@ -425,9 +576,43 @@
               <span id="reqHint" class="inline-hint">句式参考：你愿意在（时间）做（具体动作）吗？</span>
             </div>
           </div>
+
+          <div class="divider"></div>
+
+          <div class="template-board">
+            <h3 class="result-title" style="margin: 0;">情境模板库</h3>
+            <p class="tiny">按类目筛选后点卡片即可填充（用于快速开始）。</p>
+            <div id="templateCategories" class="template-cats"></div>
+            <div id="templateCards" class="template-grid"></div>
+          </div>
         </article>
 
         <aside class="panel">
+          <div class="data-row">
+            <h3 class="result-title">对话回合模式（A → B）</h3>
+            <div class="round-box">
+              <div class="round-row">
+                <input id="speakerA" value="A" />
+                <input id="speakerB" value="B" />
+              </div>
+              <div class="round-status">
+                <span class="round-speaker" id="roundSpeaker">当前发言：A</span>
+                <span class="round-phase" id="roundPhase">普通模式</span>
+              </div>
+              <p class="tiny" id="roundHint">点击“开始回合”后，A 先填写；锁定后 B 必须先复述确认，才能填写自己的四步。</p>
+              <textarea id="echoInput" placeholder="B 在这里复述：当发生……你感到……因为你在乎……" disabled></textarea>
+              <div class="round-actions">
+                <button class="btn-main" id="roundStartBtn">开始回合</button>
+                <button class="btn-plain" id="roundLockBtn">锁定A并进入复述</button>
+                <button class="btn-plain" id="echoConfirmBtn" disabled>复述确认通过</button>
+                <button class="btn-plain" id="roundFinishBtn">完成本回合</button>
+                <button class="btn-warn" id="roundResetBtn">重置回合</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
           <div class="data-row">
             <h3 class="result-title">你的 NVC 表达句</h3>
             <div class="result-box">
@@ -435,8 +620,8 @@
               <p class="tiny" id="resultTiny">补齐四步后会自动更新。</p>
             </div>
             <div class="result-box" style="min-height: 74px; border-color: rgba(30, 41, 59, 0.18); background: #fff;">
-              <p class="tiny" id="shareHint">点击“生成分享链接”，把当前内容打包成 URL。</p>
-              <input id="shareUrl" readonly value="" />
+              <p class="tiny" id="shareHint">点击“生成压缩分享链接”，把当前内容打包成更短 URL。</p>
+              <input id="shareUrl" class="mono" readonly value="" />
             </div>
           </div>
 
@@ -451,14 +636,17 @@
 
           <div class="divider"></div>
 
-          <div class="data-row">
-            <h3 class="result-title">对话规则</h3>
-            <ol class="rule-list">
-              <li>每次只讲一件事，避免翻旧账。</li>
-              <li>先复述对方，再说自己观点。</li>
-              <li>用“我感到/我需要”，替代“你就是/你应该”。</li>
-              <li>情绪过载时，先暂停 3 分钟再继续。</li>
-            </ol>
+          <div class="metrics">
+            <h3 class="result-title" style="margin: 0;">匿名统计（本地）</h3>
+            <p class="tiny">仅保存在你当前浏览器，不上传服务器。</p>
+            <div class="metric-grid">
+              <div class="metric"><b id="mSessions">0</b><span>打开次数</span></div>
+              <div class="metric"><b id="mCompleted">0</b><span>四步完成</span></div>
+              <div class="metric"><b id="mRate">0%</b><span>完成率</span></div>
+              <div class="metric"><b id="mShare">0</b><span>分享次数</span></div>
+              <div class="metric"><b id="mExport">0</b><span>导图次数</span></div>
+              <div class="metric"><b id="mRound">0</b><span>回合成功</span></div>
+            </div>
           </div>
 
           <section class="timer">
@@ -470,9 +658,21 @@
             <div class="timer-actions">
               <button class="btn-main" id="startTimerBtn">开始</button>
               <button class="btn-plain" id="pauseTimerBtn">暂停</button>
-              <button class="btn-plain soft" id="resetTimerBtn">重置</button>
+              <button class="btn-warn" id="resetTimerBtn">重置</button>
             </div>
           </section>
+
+          <div class="divider"></div>
+
+          <div class="data-row">
+            <h3 class="result-title">对话规则</h3>
+            <ol class="rule-list">
+              <li>每次只讲一件事，避免翻旧账。</li>
+              <li>先复述对方，再说自己观点。</li>
+              <li>用“我感到/我需要”，替代“你就是/你应该”。</li>
+              <li>情绪过载时，先暂停 3 分钟再继续。</li>
+            </ol>
+          </div>
         </aside>
       </section>
     </main>
@@ -482,40 +682,171 @@
       const needs = ['被看见', '被尊重', '理解', '安全感', '连接', '陪伴', '一致性', '稳定', '信任', '支持', '自由', '空间', '体贴', '合作', '诚实', '成长', '归属感', '轻松'];
       const judgementWords = ['总是', '从不', '应该', '根本', '从来不', '你就', '你每次', '就是'];
 
-      const scenarios = [
+      const templateLibrary = [
         {
-          observation: '这周你有两次在临睡前才告诉我今晚不通话。',
-          feeling: ['失落'],
+          id: 'late_reply',
+          category: '沟通',
+          title: '消息晚回',
+          observation: '这周有 3 次我发消息后，超过 4 小时才收到回复。',
+          feeling: ['焦虑', '失落'],
           need: ['连接', '一致性'],
-          request: '你愿意之后如果要取消，至少提前 30 分钟告诉我吗？'
+          request: '你愿意如果忙，先回我一句“晚点聊”吗？'
         },
         {
-          observation: '昨天吃饭时我说话，你连续看了 4 次手机。',
+          id: 'phone_dinner',
+          category: '相处',
+          title: '吃饭看手机',
+          observation: '昨天晚饭 40 分钟里，你有 4 次低头看手机。',
           feeling: ['被忽略', '难过'],
           need: ['被看见', '尊重'],
-          request: '你愿意我们吃饭的 40 分钟把手机调静音吗？'
+          request: '你愿意晚饭这 40 分钟把手机静音放旁边吗？'
         },
         {
-          observation: '上周末家务分配后，厨房和地面最后都是我收尾。',
+          id: 'housework',
+          category: '家务',
+          title: '家务不均',
+          observation: '上周 5 天里，厨房和地面都是我收尾。',
           feeling: ['疲惫', '委屈'],
           need: ['合作', '支持'],
-          request: '你愿意周日晚上一起列家务清单，并各自完成一半吗？'
+          request: '你愿意我们今晚把家务分工写下来并轮流执行吗？'
+        },
+        {
+          id: 'appointment',
+          category: '时间',
+          title: '约定迟到',
+          observation: '最近两次约好 8 点视频，都在 9 点后开始。',
+          feeling: ['沮丧', '失落'],
+          need: ['稳定', '被尊重'],
+          request: '你愿意如果会迟到，提前 20 分钟告诉我吗？'
+        },
+        {
+          id: 'boundary',
+          category: '边界',
+          title: '边界被越过',
+          observation: '这周你在朋友面前提到我不想公开的事。',
+          feeling: ['紧张', '不安'],
+          need: ['安全感', '边界感'],
+          request: '你愿意以后涉及我隐私时先征求我的同意吗？'
+        },
+        {
+          id: 'plan_change',
+          category: '计划',
+          title: '临时改计划',
+          observation: '周末原定一起出门，最后在出发前 10 分钟取消。',
+          feeling: ['失落', '困惑'],
+          need: ['可靠性', '被重视'],
+          request: '你愿意以后改计划时，尽量提前 1 小时告诉我吗？'
         }
       ];
 
-      const observationEl = document.getElementById('observation');
-      const requestEl = document.getElementById('request');
-      const customFeelingEl = document.getElementById('customFeeling');
-      const customNeedEl = document.getElementById('customNeed');
-      const resultTextEl = document.getElementById('resultText');
-      const resultTinyEl = document.getElementById('resultTiny');
-      const echoTextEl = document.getElementById('echoText');
-      const obvBadge = document.getElementById('obvBadge');
-      const obvHint = document.getElementById('obvHint');
-      const reqBadge = document.getElementById('reqBadge');
-      const reqHint = document.getElementById('reqHint');
-      const shareUrlEl = document.getElementById('shareUrl');
-      const shareHintEl = document.getElementById('shareHint');
+      const STORAGE_KEY = 'nvc-couple-draft-v3';
+      const METRICS_KEY = 'nvc-couple-metrics-v1';
+
+      const refs = {
+        observation: document.getElementById('observation'),
+        request: document.getElementById('request'),
+        customFeeling: document.getElementById('customFeeling'),
+        customNeed: document.getElementById('customNeed'),
+        resultText: document.getElementById('resultText'),
+        resultTiny: document.getElementById('resultTiny'),
+        echoText: document.getElementById('echoText'),
+        obvBadge: document.getElementById('obvBadge'),
+        obvHint: document.getElementById('obvHint'),
+        reqBadge: document.getElementById('reqBadge'),
+        reqHint: document.getElementById('reqHint'),
+        shareUrl: document.getElementById('shareUrl'),
+        shareHint: document.getElementById('shareHint'),
+        autosaveStatus: document.getElementById('autosaveStatus'),
+        timerText: document.getElementById('timerText'),
+        timerFill: document.getElementById('timerFill'),
+        templateCategories: document.getElementById('templateCategories'),
+        templateCards: document.getElementById('templateCards'),
+        roundSpeaker: document.getElementById('roundSpeaker'),
+        roundPhase: document.getElementById('roundPhase'),
+        roundHint: document.getElementById('roundHint'),
+        speakerA: document.getElementById('speakerA'),
+        speakerB: document.getElementById('speakerB'),
+        echoInput: document.getElementById('echoInput'),
+        roundStartBtn: document.getElementById('roundStartBtn'),
+        roundLockBtn: document.getElementById('roundLockBtn'),
+        echoConfirmBtn: document.getElementById('echoConfirmBtn'),
+        roundFinishBtn: document.getElementById('roundFinishBtn'),
+        roundResetBtn: document.getElementById('roundResetBtn'),
+        randomScenarioBtn: document.getElementById('randomScenarioBtn'),
+        clearBtn: document.getElementById('clearBtn'),
+        restoreDraftBtn: document.getElementById('restoreDraftBtn'),
+        copyBtn: document.getElementById('copyBtn'),
+        shareLinkBtn: document.getElementById('shareLinkBtn'),
+        nativeShareBtn: document.getElementById('nativeShareBtn'),
+        exportImageBtn: document.getElementById('exportImageBtn'),
+        startTimerBtn: document.getElementById('startTimerBtn'),
+        pauseTimerBtn: document.getElementById('pauseTimerBtn'),
+        resetTimerBtn: document.getElementById('resetTimerBtn'),
+        mSessions: document.getElementById('mSessions'),
+        mCompleted: document.getElementById('mCompleted'),
+        mRate: document.getElementById('mRate'),
+        mShare: document.getElementById('mShare'),
+        mExport: document.getElementById('mExport'),
+        mRound: document.getElementById('mRound')
+      };
+
+      const appState = {
+        formLocked: false,
+        templateCategory: '全部',
+        completionCounted: false,
+        suspendDraftSave: false,
+        draftTimer: null,
+        round: {
+          enabled: false,
+          phase: 'idle',
+          snapshot: null
+        },
+        metrics: loadMetrics()
+      };
+
+      const totalSeconds = 180;
+      let remainSeconds = totalSeconds;
+      let timerId = null;
+
+      function loadMetrics() {
+        try {
+          const raw = localStorage.getItem(METRICS_KEY);
+          if (!raw) {
+            return { sessions: 0, completed: 0, shares: 0, exports: 0, roundSuccess: 0 };
+          }
+          const parsed = JSON.parse(raw);
+          return {
+            sessions: Number(parsed.sessions || 0),
+            completed: Number(parsed.completed || 0),
+            shares: Number(parsed.shares || 0),
+            exports: Number(parsed.exports || 0),
+            roundSuccess: Number(parsed.roundSuccess || 0)
+          };
+        } catch {
+          return { sessions: 0, completed: 0, shares: 0, exports: 0, roundSuccess: 0 };
+        }
+      }
+
+      function saveMetrics() {
+        localStorage.setItem(METRICS_KEY, JSON.stringify(appState.metrics));
+      }
+
+      function bumpMetric(key, delta = 1) {
+        appState.metrics[key] = Number(appState.metrics[key] || 0) + delta;
+        saveMetrics();
+        renderMetrics();
+      }
+
+      function renderMetrics() {
+        const m = appState.metrics;
+        refs.mSessions.textContent = String(m.sessions);
+        refs.mCompleted.textContent = String(m.completed);
+        refs.mShare.textContent = String(m.shares);
+        refs.mExport.textContent = String(m.exports);
+        refs.mRound.textContent = String(m.roundSuccess);
+        const rate = m.sessions ? Math.min(100, Math.round((m.completed / m.sessions) * 100)) : 0;
+        refs.mRate.textContent = `${rate}%`;
+      }
 
       function renderChips(containerId, values) {
         const container = document.getElementById(containerId);
@@ -524,22 +855,18 @@
           .join('');
 
         container.addEventListener('click', (event) => {
+          if (appState.formLocked) return;
           const chip = event.target.closest('.chip');
-          if (!chip) {
-            return;
-          }
+          if (!chip) return;
           const activeCount = container.querySelectorAll('.chip.active').length;
-          if (!chip.classList.contains('active') && activeCount >= 3) {
-            return;
-          }
+          if (!chip.classList.contains('active') && activeCount >= 3) return;
           chip.classList.toggle('active');
           updateAll();
         });
       }
 
       function getSelectedValues(containerId) {
-        const selected = [...document.querySelectorAll(`#${containerId} .chip.active`)].map((node) => node.dataset.value);
-        return selected;
+        return [...document.querySelectorAll(`#${containerId} .chip.active`)].map((node) => node.dataset.value);
       }
 
       function mergeList(baseList, extraText) {
@@ -550,64 +877,9 @@
         return [...baseList, ...extra].slice(0, 3);
       }
 
-      function getState() {
-        return {
-          observation: observationEl.value.trim(),
-          request: requestEl.value.trim(),
-          customFeeling: customFeelingEl.value.trim(),
-          customNeed: customNeedEl.value.trim(),
-          selectedFeelings: getSelectedValues('feelingChips'),
-          selectedNeeds: getSelectedValues('needChips')
-        };
-      }
-
-      function setSelectedChips(containerId, values) {
-        const targets = new Set(values || []);
-        document.querySelectorAll(`#${containerId} .chip`).forEach((chip) => {
-          chip.classList.toggle('active', targets.has(chip.dataset.value));
-        });
-      }
-
-      function encodeStateToUrl() {
-        const state = getState();
-        const packed = encodeURIComponent(JSON.stringify(state));
-        const nextUrl = `${window.location.origin}${window.location.pathname}?data=${packed}`;
-        return nextUrl;
-      }
-
-      function applyState(rawState) {
-        const state = rawState || {};
-        observationEl.value = state.observation || '';
-        requestEl.value = state.request || '';
-        customFeelingEl.value = state.customFeeling || '';
-        customNeedEl.value = state.customNeed || '';
-        setSelectedChips('feelingChips', state.selectedFeelings || []);
-        setSelectedChips('needChips', state.selectedNeeds || []);
-        updateAll();
-      }
-
-      function readStateFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        const raw = params.get('data');
-        if (!raw) {
-          return;
-        }
-
-        try {
-          const parsed = JSON.parse(decodeURIComponent(raw));
-          applyState(parsed);
-          shareHintEl.textContent = '已从分享链接恢复内容。';
-        } catch {
-          shareHintEl.textContent = '分享链接解析失败，请重新生成。';
-        }
-      }
-
       function normalizeRequestText(rawRequest) {
         const clean = rawRequest.trim().replace(/[。]+$/, '');
-        if (!clean) {
-          return '在接下来做一个具体行动';
-        }
-        return clean;
+        return clean || '在接下来做一个具体行动';
       }
 
       function toQuestion(requestText) {
@@ -629,21 +901,11 @@
         if (!text.trim()) {
           return { status: 'warn', label: '待检测', hint: '先写一个具体事实。' };
         }
-
         const hitWord = judgementWords.find((word) => text.includes(word));
         if (hitWord) {
-          return {
-            status: 'bad',
-            label: '有评价',
-            hint: `检测到“${hitWord}”，可改成可验证的事实描述。`
-          };
+          return { status: 'bad', label: '有评价', hint: `检测到“${hitWord}”，可改成可验证的事实描述。` };
         }
-
-        return {
-          status: 'ok',
-          label: '较客观',
-          hint: '这段观察更接近事实描述。'
-        };
+        return { status: 'ok', label: '较客观', hint: '这段观察更接近事实描述。' };
       }
 
       function checkRequest(text) {
@@ -651,19 +913,15 @@
         if (!clean) {
           return { status: 'warn', label: '待检测', hint: '写一个可执行请求。' };
         }
-
         const includesAction = /愿意|可以|是否|请|能否|一起/.test(clean);
         const includesTime = /今天|明天|这周|下周|每周|点|分钟|晚|早|周末/.test(clean);
         const tooAbsolute = /必须|立刻|马上/.test(clean);
-
         if (tooAbsolute) {
           return { status: 'bad', label: '偏命令', hint: '把“命令”改成“可拒绝的请求”。' };
         }
-
         if (includesAction && includesTime) {
           return { status: 'ok', label: '较具体', hint: '请求足够清晰，利于被回应。' };
         }
-
         return { status: 'warn', label: '可更具体', hint: '加上时间和动作：例如“今晚 9 点前回我消息”。' };
       }
 
@@ -673,156 +931,270 @@
         el.classList.add(status);
       }
 
+      function getState() {
+        return {
+          observation: refs.observation.value.trim(),
+          request: refs.request.value.trim(),
+          customFeeling: refs.customFeeling.value.trim(),
+          customNeed: refs.customNeed.value.trim(),
+          selectedFeelings: getSelectedValues('feelingChips'),
+          selectedNeeds: getSelectedValues('needChips')
+        };
+      }
+
+      function applyState(rawState) {
+        const state = rawState || {};
+        refs.observation.value = state.observation || '';
+        refs.request.value = state.request || '';
+        refs.customFeeling.value = state.customFeeling || '';
+        refs.customNeed.value = state.customNeed || '';
+        setSelectedChips('feelingChips', state.selectedFeelings || []);
+        setSelectedChips('needChips', state.selectedNeeds || []);
+      }
+
+      function setSelectedChips(containerId, values) {
+        const targets = new Set(values || []);
+        document.querySelectorAll(`#${containerId} .chip`).forEach((chip) => {
+          chip.classList.toggle('active', targets.has(chip.dataset.value));
+        });
+      }
+
       function buildSentence() {
-        const observation = observationEl.value.trim() || '发生了某件事';
-        const feelingList = mergeList(getSelectedValues('feelingChips'), customFeelingEl.value);
-        const needList = mergeList(getSelectedValues('needChips'), customNeedEl.value);
-        const requestText = normalizeRequestText(requestEl.value);
+        const observation = refs.observation.value.trim() || '发生了某件事';
+        const feelingList = mergeList(getSelectedValues('feelingChips'), refs.customFeeling.value);
+        const needList = mergeList(getSelectedValues('needChips'), refs.customNeed.value);
+        const requestText = normalizeRequestText(refs.request.value);
         const actionPhrase = toActionPhrase(requestText) || '做一些调整';
         const requestQuestion = toQuestion(requestText);
-
         const feelingText = feelingList.length ? feelingList.join('、') : '有些情绪';
         const needText = needList.length ? needList.join('、') : '一些重要需要';
 
-        const sentence = `当我观察到 ${observation} 时，我感到 ${feelingText}，因为我需要 ${needText}。${requestQuestion}`;
-        const echo = `我听到你在说：当 ${observation} 发生时，你感到 ${feelingText}，因为你很重视 ${needText}，你希望我 ${actionPhrase}，对吗？`;
-
-        return { sentence, echo, feelingList, needList };
+        return {
+          observation,
+          requestText,
+          feelingList,
+          needList,
+          sentence: `当我观察到 ${observation} 时，我感到 ${feelingText}，因为我需要 ${needText}。${requestQuestion}`,
+          echo: `我听到你在说：当 ${observation} 发生时，你感到 ${feelingText}，因为你很重视 ${needText}，你希望我 ${actionPhrase}，对吗？`
+        };
       }
 
       function updateAll() {
-        const obvResult = checkObservation(observationEl.value);
-        setBadge(obvBadge, obvResult.status, obvResult.label);
-        obvHint.textContent = obvResult.hint;
+        const obvResult = checkObservation(refs.observation.value);
+        setBadge(refs.obvBadge, obvResult.status, obvResult.label);
+        refs.obvHint.textContent = obvResult.hint;
 
-        const reqResult = checkRequest(requestEl.value);
-        setBadge(reqBadge, reqResult.status, reqResult.label);
-        reqHint.textContent = reqResult.hint;
+        const reqResult = checkRequest(refs.request.value);
+        setBadge(refs.reqBadge, reqResult.status, reqResult.label);
+        refs.reqHint.textContent = reqResult.hint;
 
         const result = buildSentence();
-        resultTextEl.textContent = result.sentence;
-        echoTextEl.textContent = result.echo;
+        refs.resultText.textContent = result.sentence;
+        refs.echoText.textContent = result.echo;
 
         const missing = [];
-        if (!observationEl.value.trim()) missing.push('观察');
+        if (!refs.observation.value.trim()) missing.push('观察');
         if (result.feelingList.length === 0) missing.push('感受');
         if (result.needList.length === 0) missing.push('需要');
-        if (!requestEl.value.trim()) missing.push('请求');
+        if (!refs.request.value.trim()) missing.push('请求');
 
-        resultTinyEl.textContent = missing.length
+        refs.resultTiny.textContent = missing.length
           ? `还可以补充：${missing.join(' / ')}。`
           : '四步完整，可以直接用于表达。';
+
+        const complete = missing.length === 0;
+        if (complete && !appState.completionCounted) {
+          appState.completionCounted = true;
+          bumpMetric('completed');
+        }
+        if (!complete) {
+          appState.completionCounted = false;
+        }
+
+        scheduleDraftSave();
       }
 
       function clearForm() {
-        observationEl.value = '';
-        requestEl.value = '';
-        customFeelingEl.value = '';
-        customNeedEl.value = '';
+        if (appState.formLocked) return;
+        refs.observation.value = '';
+        refs.request.value = '';
+        refs.customFeeling.value = '';
+        refs.customNeed.value = '';
         document.querySelectorAll('.chip.active').forEach((chip) => chip.classList.remove('active'));
         updateAll();
       }
 
       function applyScenario(item) {
+        if (appState.formLocked) return;
         clearForm();
-        observationEl.value = item.observation;
-        requestEl.value = item.request;
-
-        item.feeling.forEach((value) => {
-          const chip = [...document.querySelectorAll('#feelingChips .chip')].find((node) => node.dataset.value === value);
-          if (chip) chip.classList.add('active');
-        });
-
-        item.need.forEach((value) => {
-          const chip = [...document.querySelectorAll('#needChips .chip')].find((node) => node.dataset.value === value);
-          if (chip) chip.classList.add('active');
-        });
-
+        refs.observation.value = item.observation;
+        refs.request.value = item.request;
+        setSelectedChips('feelingChips', item.feeling || []);
+        setSelectedChips('needChips', item.need || []);
         updateAll();
       }
 
-      async function copySentence() {
-        const text = resultTextEl.textContent.trim();
-        if (!text) {
-          return;
-        }
+      function renderTemplateLibrary() {
+        const cats = ['全部', ...new Set(templateLibrary.map((item) => item.category))];
+        refs.templateCategories.innerHTML = cats
+          .map((cat) => `<button class="template-cat ${cat === appState.templateCategory ? 'active' : ''}" data-cat="${cat}">${cat}</button>`)
+          .join('');
 
-        try {
-          await navigator.clipboard.writeText(text);
-          resultTinyEl.textContent = '已复制到剪贴板。';
-        } catch {
-          const fallback = document.createElement('textarea');
-          fallback.value = text;
-          document.body.appendChild(fallback);
-          fallback.select();
-          document.execCommand('copy');
-          fallback.remove();
-          resultTinyEl.textContent = '已复制到剪贴板。';
-        }
+        const visible = templateLibrary.filter((item) => appState.templateCategory === '全部' || item.category === appState.templateCategory);
+        refs.templateCards.innerHTML = visible
+          .map(
+            (item) => `
+              <button class="template-card" data-template-id="${item.id}">
+                <b>${item.title}</b>
+                <span>${item.category} · ${item.observation.slice(0, 22)}...</span>
+              </button>
+            `
+          )
+          .join('');
       }
 
-      async function copyToClipboard(text) {
-        try {
-          await navigator.clipboard.writeText(text);
-          return true;
-        } catch {
-          const fallback = document.createElement('textarea');
-          fallback.value = text;
-          document.body.appendChild(fallback);
-          fallback.select();
-          const ok = document.execCommand('copy');
-          fallback.remove();
-          return ok;
-        }
-      }
-
-      async function buildShareLink() {
-        const url = encodeStateToUrl();
-        shareUrlEl.value = url;
-        const copied = await copyToClipboard(url);
-        shareHintEl.textContent = copied ? '分享链接已复制。' : '已生成分享链接，可手动复制。';
-        return url;
-      }
-
-      async function nativeShare() {
-        const url = await buildShareLink();
-        if (!navigator.share) {
-          return;
-        }
-        try {
-          await navigator.share({
-            title: '非暴力沟通练习板',
-            text: '我们用这个页面练习 NVC 对话',
-            url
-          });
-          shareHintEl.textContent = '已调用系统分享。';
-        } catch {
-          shareHintEl.textContent = '分享已取消，链接仍可手动发送。';
-        }
-      }
-
-      renderChips('feelingChips', feelings);
-      renderChips('needChips', needs);
-
-      [observationEl, requestEl, customFeelingEl, customNeedEl].forEach((el) => {
-        el.addEventListener('input', updateAll);
+      refs.templateCategories.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-cat]');
+        if (!btn) return;
+        appState.templateCategory = btn.dataset.cat;
+        renderTemplateLibrary();
       });
 
-      document.getElementById('clearBtn').addEventListener('click', clearForm);
-      document.getElementById('copyBtn').addEventListener('click', copySentence);
-      document.getElementById('shareLinkBtn').addEventListener('click', buildShareLink);
-      document.getElementById('nativeShareBtn').addEventListener('click', nativeShare);
-      document.getElementById('randomScenarioBtn').addEventListener('click', () => {
-        const random = scenarios[Math.floor(Math.random() * scenarios.length)];
-        applyScenario(random);
+      refs.templateCards.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-template-id]');
+        if (!btn) return;
+        const template = templateLibrary.find((item) => item.id === btn.dataset.templateId);
+        if (!template) return;
+        applyScenario(template);
+        refs.shareHint.textContent = `已填充模板：${template.title}`;
       });
 
-      const totalSeconds = 180;
-      let remainSeconds = totalSeconds;
-      let timerId = null;
+      function setFormLocked(locked) {
+        appState.formLocked = locked;
+        [refs.observation, refs.request, refs.customFeeling, refs.customNeed].forEach((el) => {
+          el.disabled = locked;
+        });
+        refs.randomScenarioBtn.disabled = locked;
+        refs.clearBtn.disabled = locked;
+        document.querySelectorAll('#feelingChips .chip, #needChips .chip').forEach((chip) => {
+          chip.classList.toggle('disabled', locked);
+        });
+      }
 
-      const timerTextEl = document.getElementById('timerText');
-      const timerFillEl = document.getElementById('timerFill');
+      function getSpeaker(label, fallback) {
+        return (label.value || '').trim() || fallback;
+      }
+
+      function roundPhaseText() {
+        const { phase, enabled } = appState.round;
+        if (!enabled || phase === 'idle') return '普通模式';
+        if (phase === 'A_FILL') return 'A 填写中';
+        if (phase === 'B_ECHO') return 'B 复述确认';
+        if (phase === 'B_FILL') return 'B 填写中';
+        return '普通模式';
+      }
+
+      function refreshRoundUi() {
+        refs.roundPhase.textContent = roundPhaseText();
+        const a = getSpeaker(refs.speakerA, 'A');
+        const b = getSpeaker(refs.speakerB, 'B');
+        const speaker = appState.round.phase === 'B_FILL' || appState.round.phase === 'B_ECHO' ? b : a;
+        refs.roundSpeaker.textContent = `当前发言：${speaker}`;
+
+        refs.echoInput.disabled = appState.round.phase !== 'B_ECHO';
+        refs.echoConfirmBtn.disabled = appState.round.phase !== 'B_ECHO';
+      }
+
+      function startRound() {
+        appState.round.enabled = true;
+        appState.round.phase = 'A_FILL';
+        appState.round.snapshot = null;
+        refs.echoInput.value = '';
+        setFormLocked(false);
+        clearForm();
+        refs.roundHint.textContent = `${getSpeaker(refs.speakerA, 'A')} 请填写四步；完成后点“锁定A并进入复述”。`;
+        refreshRoundUi();
+      }
+
+      function lockRound() {
+        if (!appState.round.enabled || appState.round.phase !== 'A_FILL') return;
+        const result = buildSentence();
+        if (!refs.observation.value.trim() || result.feelingList.length === 0 || result.needList.length === 0 || !refs.request.value.trim()) {
+          refs.roundHint.textContent = 'A 还没填写完整四步，暂时不能锁定。';
+          return;
+        }
+        appState.round.snapshot = {
+          ...getState(),
+          feelingList: result.feelingList,
+          needList: result.needList,
+          sentence: result.sentence
+        };
+        appState.round.phase = 'B_ECHO';
+        setFormLocked(true);
+        refs.roundHint.textContent = `${getSpeaker(refs.speakerB, 'B')} 先复述 A 的感受与需要，确认后才能填写。`;
+        refreshRoundUi();
+        scheduleDraftSave();
+      }
+
+      function validateEcho(text, snapshot) {
+        if (!snapshot) return false;
+        const clean = text.trim();
+        if (clean.length < 10) return false;
+
+        const hasFeeling = (snapshot.feelingList || []).some((word) => clean.includes(word));
+        const hasNeed = (snapshot.needList || []).some((word) => clean.includes(word));
+        const obsKeys = (snapshot.observation || '')
+          .split(/[，。,.\s]+/)
+          .map((it) => it.trim())
+          .filter((it) => it.length >= 2)
+          .slice(0, 6);
+        const hasObs = obsKeys.some((key) => clean.includes(key));
+        const hitCount = [hasFeeling, hasNeed, hasObs].filter(Boolean).length;
+        return hitCount >= 2;
+      }
+
+      function confirmEcho() {
+        if (appState.round.phase !== 'B_ECHO') return;
+        if (!validateEcho(refs.echoInput.value, appState.round.snapshot)) {
+          refs.roundHint.textContent = '复述还不够准确：至少提到对方的“感受 + 需要”（并尽量提到事实）。';
+          return;
+        }
+        appState.round.phase = 'B_FILL';
+        setFormLocked(false);
+        clearForm();
+        refs.roundHint.textContent = `${getSpeaker(refs.speakerB, 'B')} 复述通过，请填写你自己的四步。`;
+        refreshRoundUi();
+      }
+
+      function finishRound() {
+        if (appState.round.phase !== 'B_FILL') {
+          refs.roundHint.textContent = '当前不在 B 填写阶段，无法结束回合。';
+          return;
+        }
+        const result = buildSentence();
+        if (!refs.observation.value.trim() || result.feelingList.length === 0 || result.needList.length === 0 || !refs.request.value.trim()) {
+          refs.roundHint.textContent = 'B 还没填写完整四步。';
+          return;
+        }
+        bumpMetric('roundSuccess');
+        appState.round.phase = 'A_FILL';
+        appState.round.snapshot = null;
+        refs.echoInput.value = '';
+        clearForm();
+        refs.roundHint.textContent = '本回合已完成。下一轮可继续由 A 开始。';
+        refreshRoundUi();
+      }
+
+      function resetRound() {
+        appState.round.enabled = false;
+        appState.round.phase = 'idle';
+        appState.round.snapshot = null;
+        refs.echoInput.value = '';
+        setFormLocked(false);
+        refs.roundHint.textContent = '点击“开始回合”后，A 先填写；锁定后 B 必须先复述确认，才能填写自己的四步。';
+        refreshRoundUi();
+        scheduleDraftSave();
+      }
 
       function formatTime(seconds) {
         const m = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -831,16 +1203,13 @@
       }
 
       function paintTimer() {
-        timerTextEl.textContent = formatTime(remainSeconds);
+        refs.timerText.textContent = formatTime(remainSeconds);
         const ratio = (remainSeconds / totalSeconds) * 100;
-        timerFillEl.style.width = `${Math.max(0, ratio)}%`;
+        refs.timerFill.style.width = `${Math.max(0, ratio)}%`;
       }
 
       function startTimer() {
-        if (timerId) {
-          return;
-        }
-
+        if (timerId) return;
         timerId = setInterval(() => {
           remainSeconds -= 1;
           paintTimer();
@@ -864,13 +1233,349 @@
         paintTimer();
       }
 
-      document.getElementById('startTimerBtn').addEventListener('click', startTimer);
-      document.getElementById('pauseTimerBtn').addEventListener('click', pauseTimer);
-      document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
+      function getDraftState() {
+        return {
+          form: getState(),
+          round: appState.round,
+          speakerA: refs.speakerA.value,
+          speakerB: refs.speakerB.value,
+          echoInput: refs.echoInput.value,
+          timer: remainSeconds,
+          templateCategory: appState.templateCategory,
+          at: Date.now()
+        };
+      }
 
-      readStateFromUrl();
-      updateAll();
-      paintTimer();
+      function setAutosaveText(text) {
+        refs.autosaveStatus.textContent = `草稿自动保存：${text}`;
+      }
+
+      function saveDraftNow() {
+        if (appState.suspendDraftSave) return;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(getDraftState()));
+        const now = new Date();
+        setAutosaveText(`已保存 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`);
+      }
+
+      function scheduleDraftSave() {
+        if (appState.suspendDraftSave) return;
+        clearTimeout(appState.draftTimer);
+        appState.draftTimer = setTimeout(saveDraftNow, 260);
+      }
+
+      function applyDraft(rawDraft) {
+        if (!rawDraft) return;
+        appState.suspendDraftSave = true;
+        applyState(rawDraft.form || {});
+        appState.round = rawDraft.round || { enabled: false, phase: 'idle', snapshot: null };
+        refs.speakerA.value = rawDraft.speakerA || 'A';
+        refs.speakerB.value = rawDraft.speakerB || 'B';
+        refs.echoInput.value = rawDraft.echoInput || '';
+        if (typeof rawDraft.timer === 'number') {
+          remainSeconds = Math.max(0, Math.min(totalSeconds, rawDraft.timer));
+          paintTimer();
+        }
+        appState.templateCategory = rawDraft.templateCategory || '全部';
+        renderTemplateLibrary();
+        refreshRoundUi();
+        updateAll();
+        appState.suspendDraftSave = false;
+      }
+
+      function restoreDraft() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) {
+            setAutosaveText('没有可恢复草稿');
+            return;
+          }
+          applyDraft(JSON.parse(raw));
+          setAutosaveText('已恢复草稿');
+        } catch {
+          setAutosaveText('草稿恢复失败');
+        }
+      }
+
+      function loadDraft() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return false;
+          applyDraft(JSON.parse(raw));
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function uint8ToBase64Url(uint8) {
+        let binary = '';
+        const chunkSize = 0x8000;
+        for (let i = 0; i < uint8.length; i += chunkSize) {
+          binary += String.fromCharCode(...uint8.subarray(i, i + chunkSize));
+        }
+        return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+      }
+
+      function base64UrlToUint8(base64url) {
+        const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((base64url.length + 3) % 4);
+        const binary = atob(base64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i += 1) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+      }
+
+      async function compressToBase64Url(text) {
+        if (!window.CompressionStream) {
+          throw new Error('CompressionStream unsupported');
+        }
+        const encoder = new TextEncoder();
+        const cs = new CompressionStream('gzip');
+        const writer = cs.writable.getWriter();
+        await writer.write(encoder.encode(text));
+        await writer.close();
+        const compressed = new Uint8Array(await new Response(cs.readable).arrayBuffer());
+        return uint8ToBase64Url(compressed);
+      }
+
+      async function decompressFromBase64Url(payload) {
+        if (!window.DecompressionStream) {
+          throw new Error('DecompressionStream unsupported');
+        }
+        const bytes = base64UrlToUint8(payload);
+        const ds = new DecompressionStream('gzip');
+        const writer = ds.writable.getWriter();
+        await writer.write(bytes);
+        await writer.close();
+        const out = await new Response(ds.readable).arrayBuffer();
+        return new TextDecoder().decode(out);
+      }
+
+      async function encodeStateToUrl() {
+        const stateJson = JSON.stringify(getState());
+        const url = new URL(window.location.href);
+        url.search = '';
+        try {
+          const zipped = await compressToBase64Url(stateJson);
+          url.searchParams.set('z', zipped);
+          refs.shareHint.textContent = '已生成压缩分享链接。';
+        } catch {
+          url.searchParams.set('data', encodeURIComponent(stateJson));
+          refs.shareHint.textContent = '浏览器不支持压缩，已生成普通分享链接。';
+        }
+        return url.toString();
+      }
+
+      async function decodeStateFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('z')) {
+          const payload = params.get('z');
+          try {
+            const json = await decompressFromBase64Url(payload);
+            return JSON.parse(json);
+          } catch {
+            return null;
+          }
+        }
+        if (params.has('data')) {
+          const raw = params.get('data');
+          try {
+            return JSON.parse(decodeURIComponent(raw));
+          } catch {
+            try {
+              return JSON.parse(raw);
+            } catch {
+              return null;
+            }
+          }
+        }
+        return null;
+      }
+
+      async function copyToClipboard(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch {
+          const fallback = document.createElement('textarea');
+          fallback.value = text;
+          document.body.appendChild(fallback);
+          fallback.select();
+          const ok = document.execCommand('copy');
+          fallback.remove();
+          return ok;
+        }
+      }
+
+      async function copySentence() {
+        const text = refs.resultText.textContent.trim();
+        if (!text) return;
+        const copied = await copyToClipboard(text);
+        refs.resultTiny.textContent = copied ? '已复制到剪贴板。' : '复制失败，请手动复制。';
+      }
+
+      async function buildShareLink() {
+        const url = await encodeStateToUrl();
+        refs.shareUrl.value = url;
+        const copied = await copyToClipboard(url);
+        refs.shareHint.textContent = copied ? `${refs.shareHint.textContent} 链接已复制。` : `${refs.shareHint.textContent} 可手动复制。`;
+        bumpMetric('shares');
+        return url;
+      }
+
+      async function nativeShare() {
+        const url = await buildShareLink();
+        if (!navigator.share) return;
+        try {
+          await navigator.share({
+            title: '非暴力沟通练习板',
+            text: '我们用这个页面练习 NVC 对话',
+            url
+          });
+          refs.shareHint.textContent = '已调用系统分享。';
+        } catch {
+          refs.shareHint.textContent = '分享已取消，链接仍可手动发送。';
+        }
+      }
+
+      function wrapLine(ctx, text, maxWidth) {
+        const lines = [];
+        let line = '';
+        for (const ch of text) {
+          const test = line + ch;
+          if (ctx.measureText(test).width > maxWidth && line) {
+            lines.push(line);
+            line = ch;
+          } else {
+            line = test;
+          }
+        }
+        if (line) lines.push(line);
+        return lines;
+      }
+
+      function drawCard(ctx, x, y, w, h, title, content) {
+        ctx.fillStyle = 'rgba(255,255,255,0.96)';
+        ctx.strokeStyle = 'rgba(15,118,110,0.24)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 18);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#0f766e';
+        ctx.font = '700 32px "Noto Sans SC"';
+        ctx.fillText(title, x + 22, y + 50);
+
+        ctx.fillStyle = '#22303a';
+        ctx.font = '500 26px "Noto Sans SC"';
+        const lines = wrapLine(ctx, content, w - 44);
+        let py = y + 98;
+        for (const line of lines.slice(0, 7)) {
+          ctx.fillText(line, x + 22, py);
+          py += 36;
+        }
+      }
+
+      async function exportAsImage() {
+        const result = buildSentence();
+        const canvas = document.createElement('canvas');
+        canvas.width = 1200;
+        canvas.height = 1700;
+        const ctx = canvas.getContext('2d');
+
+        const gradient = ctx.createLinearGradient(0, 0, 1200, 1700);
+        gradient.addColorStop(0, '#fff7e0');
+        gradient.addColorStop(1, '#e7f7f1');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = '#1f2937';
+        ctx.font = '700 56px "Noto Sans SC"';
+        ctx.fillText('非暴力沟通练习记录', 54, 88);
+        ctx.font = '400 22px "Noto Sans SC"';
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(new Date().toLocaleString('zh-CN'), 54, 128);
+
+        const feelingText = mergeList(getSelectedValues('feelingChips'), refs.customFeeling.value).join('、') || '（未填写）';
+        const needText = mergeList(getSelectedValues('needChips'), refs.customNeed.value).join('、') || '（未填写）';
+
+        drawCard(ctx, 50, 168, 1100, 210, '观察', refs.observation.value.trim() || '（未填写）');
+        drawCard(ctx, 50, 404, 1100, 210, '感受', feelingText);
+        drawCard(ctx, 50, 640, 1100, 210, '需要', needText);
+        drawCard(ctx, 50, 876, 1100, 210, '请求', refs.request.value.trim() || '（未填写）');
+        drawCard(ctx, 50, 1112, 1100, 320, '表达句', result.sentence);
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '500 20px "Noto Sans SC"';
+        ctx.fillText('Generated by NVC Couple Board', 54, 1650);
+
+        const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+        if (!blob) return;
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nvc-${Date.now()}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        bumpMetric('exports');
+      }
+
+      function randomScenario() {
+        const random = templateLibrary[Math.floor(Math.random() * templateLibrary.length)];
+        applyScenario(random);
+      }
+
+      function attachEvents() {
+        [refs.observation, refs.request, refs.customFeeling, refs.customNeed, refs.speakerA, refs.speakerB, refs.echoInput].forEach((el) => {
+          el.addEventListener('input', updateAll);
+        });
+
+        refs.clearBtn.addEventListener('click', clearForm);
+        refs.restoreDraftBtn.addEventListener('click', restoreDraft);
+        refs.copyBtn.addEventListener('click', copySentence);
+        refs.shareLinkBtn.addEventListener('click', buildShareLink);
+        refs.nativeShareBtn.addEventListener('click', nativeShare);
+        refs.randomScenarioBtn.addEventListener('click', randomScenario);
+        refs.exportImageBtn.addEventListener('click', exportAsImage);
+
+        refs.roundStartBtn.addEventListener('click', startRound);
+        refs.roundLockBtn.addEventListener('click', lockRound);
+        refs.echoConfirmBtn.addEventListener('click', confirmEcho);
+        refs.roundFinishBtn.addEventListener('click', finishRound);
+        refs.roundResetBtn.addEventListener('click', resetRound);
+
+        refs.startTimerBtn.addEventListener('click', startTimer);
+        refs.pauseTimerBtn.addEventListener('click', pauseTimer);
+        refs.resetTimerBtn.addEventListener('click', resetTimer);
+      }
+
+      async function init() {
+        renderChips('feelingChips', feelings);
+        renderChips('needChips', needs);
+        renderTemplateLibrary();
+        attachEvents();
+
+        appState.metrics.sessions += 1;
+        saveMetrics();
+        renderMetrics();
+
+        const stateFromUrl = await decodeStateFromUrl();
+        if (stateFromUrl) {
+          applyState(stateFromUrl);
+          refs.shareHint.textContent = '已从分享链接恢复内容。';
+        } else {
+          loadDraft();
+        }
+
+        refreshRoundUi();
+        updateAll();
+        paintTimer();
+      }
+
+      init();
     </script>
   </body>
 </html>
