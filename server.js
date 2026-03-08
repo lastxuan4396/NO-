@@ -287,6 +287,7 @@ class PgShortlinkStore {
     await this.pool.query('ALTER TABLE short_links ADD COLUMN IF NOT EXISTS payload JSONB');
     await this.pool.query("ALTER TABLE short_links ADD COLUMN IF NOT EXISTS payload_kind TEXT NOT NULL DEFAULT 'state'");
     await this.pool.query('ALTER TABLE short_links ADD COLUMN IF NOT EXISTS state JSONB');
+    await this.pool.query('ALTER TABLE short_links ALTER COLUMN state DROP NOT NULL');
     await this.pool.query("UPDATE short_links SET payload = state WHERE payload IS NULL AND state IS NOT NULL");
     await this.pool.query("UPDATE short_links SET payload_kind = 'state' WHERE payload_kind IS NULL OR payload_kind = ''");
     await this.pool.query('CREATE INDEX IF NOT EXISTS idx_short_links_expires_at ON short_links (expires_at)');
@@ -301,7 +302,7 @@ class PgShortlinkStore {
   async create(entry) {
     await this.pool.query(
       `INSERT INTO short_links (id, payload, payload_kind, state, created_at, expires_at, hits)
-       VALUES ($1, $2::jsonb, $3, NULL, $4::timestamptz, $5::timestamptz, 0)`,
+       VALUES ($1, $2::jsonb, $3, CASE WHEN $3 = 'state' THEN $2::jsonb ELSE '{}'::jsonb END, $4::timestamptz, $5::timestamptz, 0)`,
       [entry.id, JSON.stringify(entry.payload), entry.payloadKind, entry.createdAt, entry.expiresAt]
     );
   }

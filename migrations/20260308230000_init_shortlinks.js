@@ -18,6 +18,7 @@ exports.up = (pgm) => {
   pgm.sql(`ALTER TABLE short_links ADD COLUMN IF NOT EXISTS payload JSONB`);
   pgm.sql(`ALTER TABLE short_links ADD COLUMN IF NOT EXISTS payload_kind TEXT NOT NULL DEFAULT 'state'`);
   pgm.sql(`ALTER TABLE short_links ADD COLUMN IF NOT EXISTS state JSONB`);
+  pgm.sql(`ALTER TABLE short_links ALTER COLUMN state DROP NOT NULL`);
   pgm.sql(`UPDATE short_links SET payload = state WHERE payload IS NULL AND state IS NOT NULL`);
   pgm.sql(`UPDATE short_links SET payload_kind = 'state' WHERE payload_kind IS NULL OR payload_kind = ''`);
   pgm.sql(`CREATE INDEX IF NOT EXISTS idx_short_links_expires_at ON short_links (expires_at)`);
