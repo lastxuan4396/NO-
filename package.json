@@ -5,7 +5,10 @@
   "description": "NVC couple communication page",
   "scripts": {
     "build:config": "node scripts/generate-config.js",
+    "migrate:up": "node-pg-migrate up --migrations-dir migrations",
+    "migrate:down": "node-pg-migrate down --migrations-dir migrations",
     "start": "node server.js",
+    "start:prod": "npm run migrate:up && node server.js",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -14,6 +17,7 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
-    "@playwright/test": "^1.54.2"
+    "@playwright/test": "^1.54.2",
+    "node-pg-migrate": "^8.0.3"
   }
 }

@@ -114,3 +114,24 @@ test('短链 API 创建和读取', async ({ request }) => {
   expect(loaded.id).toBe(created.id);
   expect(loaded.state.observation).toBe('API 测试');
 });
+
+test('短链 API 支持加密载荷格式', async ({ request }) => {
+  const sealed = {
+    v: 1,
+    alg: 'AES-GCM',
+    iv: 'AQIDBAUGBwgJCgsM',
+    ct: 'dGVzdC1jaXBoZXJ0ZXh0'
+  };
+  const createResp = await request.post('/api/shortlinks', {
+    data: { sealed }
+  });
+  expect(createResp.status()).toBe(201);
+  const created = await createResp.json();
+  expect(created.id).toBeTruthy();
+
+  const getResp = await request.get(`/api/shortlinks/${created.id}`);
+  expect(getResp.status()).toBe(200);
+  const loaded = await getResp.json();
+  expect(loaded.sealed).toBeTruthy();
+  expect(loaded.sealed.alg).toBe('AES-GCM');
+});

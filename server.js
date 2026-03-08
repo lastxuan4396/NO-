@@ -28,6 +28,7 @@ const cleanupIntervalMs = Math.max(60000, Number(process.env.SHORTLINK_CLEANUP_I
 const rateLimitWindowMs = Math.max(1000, Number(process.env.RATE_LIMIT_WINDOW_MS || 60000));
 const rateLimitWriteMax = Math.max(1, Number(process.env.RATE_LIMIT_WRITE_MAX || 40));
 const rateLimitReadMax = Math.max(1, Number(process.env.RATE_LIMIT_READ_MAX || 160));
+const turnstileSecretKey = String(process.env.TURNSTILE_SECRET_KEY || '').trim();
 const allowedOrigins = new Set(
   String(process.env.CORS_ALLOW_ORIGINS || '')
     .split(',')
@@ -36,6 +37,20 @@ const allowedOrigins = new Set(
 );
 
 const RATE_BUCKETS = new Map();
+const APP_METRICS = {
+  shortlink_create_total: 0,
+  shortlink_read_total: 0,
+  shortlink_read_miss_total: 0,
+  shortlink_store_state_total: 0,
+  shortlink_store_sealed_total: 0,
+  ratelimit_block_total: 0,
+  captcha_fail_total: 0,
+  internal_error_total: 0
+};
+
+function bumpMetric(name, delta = 1) {
+  APP_METRICS[name] = Number(APP_METRICS[name] || 0) + delta;
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -85,6 +100,36 @@ function sanitizeState(rawState) {
   };
 }
 
+function sanitizeSealed(rawSealed) {
+  if (!rawSealed || typeof rawSealed !== 'object') {
+    return null;
+  }
+  const iv = String(rawSealed.iv || '').trim();
+  const ct = String(rawSealed.ct || '').trim();
+  if (!iv || !ct || iv.length > 128 || ct.length > 12000) {
+    return null;
+  }
+  return {
+    v: Number(rawSealed.v || 1),
+    alg: String(rawSealed.alg || 'AES-GCM').slice(0, 40),
+    iv,
+    ct
+  };
+}
+
+function normalizePayloadForResponse(entry) {
+  const base = {
+    id: entry.id,
+    createdAt: entry.createdAt,
+    expiresAt: entry.expiresAt,
+    hits: entry.hits
+  };
+  if (entry.payloadKind === 'sealed') {
+    return { ...base, sealed: entry.payload };
+  }
+  return { ...base, state: entry.payload };
+}
+
 function getClientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
   if (typeof forwarded === 'string' && forwarded.trim()) {
@@ -104,6 +149,31 @@ function buildBaseUrl(req) {
     return defaultBaseUrl.replace(/\/+$/g, '');
   }
   return `${req.protocol}://${req.get('host')}`;
+}
+
+async function verifyTurnstileToken(token, remoteIp) {
+  if (!turnstileSecretKey) return true;
+  const cleanToken = String(token || '').trim();
+  if (!cleanToken) return false;
+  try {
+    const body = new URLSearchParams({
+      secret: turnstileSecretKey,
+      response: cleanToken,
+      remoteip: String(remoteIp || '')
+    });
+    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString()
+    });
+    if (!resp.ok) {
+      return false;
+    }
+    const data = await resp.json();
+    return Boolean(data && data.success);
+  } catch {
+    return false;
+  }
 }
 
 function requestAuditLog(req, res, startedAt) {
@@ -145,7 +215,8 @@ class FileShortlinkStore {
 
   async create(entry) {
     this.store.links[entry.id] = {
-      state: entry.state,
+      payloadKind: entry.payloadKind,
+      payload: entry.payload,
       createdAt: entry.createdAt,
       expiresAt: entry.expiresAt,
       hits: 0
@@ -163,12 +234,15 @@ class FileShortlinkStore {
     }
     raw.hits = Number(raw.hits || 0) + 1;
     await this.save();
+    const payload = raw.payload || raw.state || null;
+    const payloadKind = raw.payloadKind || (raw.state ? 'state' : 'sealed');
     return {
       id,
       createdAt: raw.createdAt,
       expiresAt: raw.expiresAt,
       hits: raw.hits,
-      state: raw.state
+      payloadKind,
+      payload
     };
   }
 
@@ -202,12 +276,19 @@ class PgShortlinkStore {
     await this.pool.query(`
       CREATE TABLE IF NOT EXISTS short_links (
         id TEXT PRIMARY KEY,
-        state JSONB NOT NULL,
+        payload JSONB,
+        payload_kind TEXT NOT NULL DEFAULT 'state',
+        state JSONB,
         created_at TIMESTAMPTZ NOT NULL,
         expires_at TIMESTAMPTZ NOT NULL,
         hits INTEGER NOT NULL DEFAULT 0
       )
     `);
+    await this.pool.query('ALTER TABLE short_links ADD COLUMN IF NOT EXISTS payload JSONB');
+    await this.pool.query("ALTER TABLE short_links ADD COLUMN IF NOT EXISTS payload_kind TEXT NOT NULL DEFAULT 'state'");
+    await this.pool.query('ALTER TABLE short_links ADD COLUMN IF NOT EXISTS state JSONB');
+    await this.pool.query("UPDATE short_links SET payload = state WHERE payload IS NULL AND state IS NOT NULL");
+    await this.pool.query("UPDATE short_links SET payload_kind = 'state' WHERE payload_kind IS NULL OR payload_kind = ''");
     await this.pool.query('CREATE INDEX IF NOT EXISTS idx_short_links_expires_at ON short_links (expires_at)');
     return 'postgres';
   }
@@ -219,9 +300,9 @@ class PgShortlinkStore {
 
   async create(entry) {
     await this.pool.query(
-      `INSERT INTO short_links (id, state, created_at, expires_at, hits)
-       VALUES ($1, $2::jsonb, $3::timestamptz, $4::timestamptz, 0)`,
-      [entry.id, JSON.stringify(entry.state), entry.createdAt, entry.expiresAt]
+      `INSERT INTO short_links (id, payload, payload_kind, state, created_at, expires_at, hits)
+       VALUES ($1, $2::jsonb, $3, NULL, $4::timestamptz, $5::timestamptz, 0)`,
+      [entry.id, JSON.stringify(entry.payload), entry.payloadKind, entry.createdAt, entry.expiresAt]
     );
   }
 
@@ -231,7 +312,7 @@ class PgShortlinkStore {
         UPDATE short_links
         SET hits = hits + 1
         WHERE id = $1 AND expires_at > NOW()
-        RETURNING id, state, created_at, expires_at, hits
+        RETURNING id, payload, payload_kind, state, created_at, expires_at, hits
       )
       SELECT * FROM updated
     `;
@@ -243,7 +324,8 @@ class PgShortlinkStore {
       createdAt: new Date(row.created_at).toISOString(),
       expiresAt: new Date(row.expires_at).toISOString(),
       hits: Number(row.hits || 0),
-      state: row.state
+      payloadKind: row.payload_kind || (row.state ? 'state' : 'sealed'),
+      payload: row.payload || row.state
     };
   }
 
@@ -273,6 +355,7 @@ function rateLimitMiddleware(req, res, next) {
   if (bucket.count > limit) {
     const retryAfter = Math.max(1, Math.ceil((rateLimitWindowMs - (now - bucket.start)) / 1000));
     res.setHeader('Retry-After', String(retryAfter));
+    bumpMetric('ratelimit_block_total');
     res.status(429).json({ message: 'too many requests' });
     return;
   }
@@ -325,15 +408,26 @@ app.get('/healthz', (_req, res) => {
     ok: true,
     service: 'nvc-couple-share',
     store: app.locals.shortlinkStoreMode,
-    ttlDays: shortlinkTtlDays
+    ttlDays: shortlinkTtlDays,
+    captchaEnabled: Boolean(turnstileSecretKey)
   });
+});
+
+app.get('/metrics', (_req, res) => {
+  const lines = ['# HELP nvc_shortlink_metrics NVC shortlink app counters', '# TYPE nvc_shortlink_metrics gauge'];
+  for (const [name, value] of Object.entries(APP_METRICS)) {
+    lines.push(`${name} ${Number(value || 0)}`);
+  }
+  res.setHeader('Content-Type', 'text/plain; version=0.0.4');
+  res.status(200).send(`${lines.join('\n')}\n`);
 });
 
 app.post('/api/shortlinks', async (req, res, next) => {
   try {
     const state = sanitizeState(req.body && req.body.state);
-    if (!state) {
-      res.status(400).json({ message: 'state is required' });
+    const sealed = sanitizeSealed(req.body && req.body.sealed);
+    if (!state && !sealed) {
+      res.status(400).json({ message: 'state or sealed is required' });
       return;
     }
     const store = app.locals.shortlinkStore;
@@ -341,13 +435,23 @@ app.post('/api/shortlinks', async (req, res, next) => {
       res.status(503).json({ message: 'shortlink storage unavailable' });
       return;
     }
+    const captchaOk = await verifyTurnstileToken(req.body && req.body.captchaToken, getClientIp(req));
+    if (!captchaOk) {
+      bumpMetric('captcha_fail_total');
+      res.status(403).json({ message: 'captcha verification failed' });
+      return;
+    }
+    const payloadKind = sealed ? 'sealed' : 'state';
+    const payload = sealed || state;
     let id = generateId();
     while (await store.hasId(id)) {
       id = generateId();
     }
     const createdAt = nowIso();
     const expiresAt = getExpireIso(createdAt);
-    await store.create({ id, state, createdAt, expiresAt });
+    await store.create({ id, payloadKind, payload, createdAt, expiresAt });
+    bumpMetric('shortlink_create_total');
+    bumpMetric(payloadKind === 'sealed' ? 'shortlink_store_sealed_total' : 'shortlink_store_state_total');
     const baseUrl = buildBaseUrl(req);
     res.status(201).json({
       id,
@@ -373,10 +477,12 @@ app.get('/api/shortlinks/:id', async (req, res, next) => {
     }
     const entry = await store.findById(id);
     if (!entry) {
+      bumpMetric('shortlink_read_miss_total');
       res.status(404).json({ message: 'short link not found or expired' });
       return;
     }
-    res.status(200).json(entry);
+    bumpMetric('shortlink_read_total');
+    res.status(200).json(normalizePayloadForResponse(entry));
   } catch (error) {
     next(error);
   }
@@ -396,6 +502,7 @@ app.get('*', (_req, res) => {
 
 app.use((error, _req, res, _next) => {
   console.error('[error]', error);
+  bumpMetric('internal_error_total');
   if (Sentry) {
     Sentry.captureException(error);
   }

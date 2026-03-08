@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0f766e" />
     <link rel="manifest" href="/manifest.webmanifest" />
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <title>非暴力沟通练习板</title>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@400;500;700;800&display=swap');
@@ -509,6 +510,12 @@
         display: none !important;
       }
 
+      .captcha-wrap {
+        width: 100%;
+        display: grid;
+        gap: 4px;
+      }
+
       .mono {
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       }
@@ -570,8 +577,13 @@
           <button class="btn-warn" id="exportImageBtn">导出结果图片</button>
           <button class="btn-plain" id="exportDataBtn">导出数据JSON</button>
           <button class="btn-plain" id="importDataBtn">导入数据JSON</button>
+          <button class="btn-plain hidden" id="copyRestoreBtn">一键复制恢复草稿链接</button>
           <button class="btn-main hidden" id="installBtn">安装到桌面</button>
           <input id="importDataInput" type="file" accept="application/json,.json" class="hidden" />
+          <div id="captchaWrap" class="captcha-wrap hidden">
+            <div id="turnstileWidget"></div>
+            <p class="tiny">短链分享前请先完成人机验证。</p>
+          </div>
         </div>
       </header>
 
@@ -668,6 +680,7 @@
             <div class="result-box" style="min-height: 74px; border-color: rgba(30, 41, 59, 0.18); background: #fff;">
               <p class="tiny" id="shareHint">点击“生成压缩分享链接”，把当前内容打包成更短 URL。</p>
               <input id="shareUrl" class="mono" readonly value="" />
+              <p class="tiny" id="linkExpiryHint"></p>
             </div>
           </div>
 
@@ -815,6 +828,7 @@
         (window.location.hostname === 'nvc-couple-share.onrender.com'
           ? 'https://nvc-couple-links.onrender.com'
           : normalizeApiBase(window.location.origin));
+      const TURNSTILE_SITE_KEY = String(window.__NVC_TURNSTILE_SITE_KEY__ || '').trim();
 
       const refs = {
         observation: document.getElementById('observation'),
@@ -853,10 +867,14 @@
         shareLinkBtn: document.getElementById('shareLinkBtn'),
         shortLinkBtn: document.getElementById('shortLinkBtn'),
         nativeShareBtn: document.getElementById('nativeShareBtn'),
+        copyRestoreBtn: document.getElementById('copyRestoreBtn'),
         exportImageBtn: document.getElementById('exportImageBtn'),
         exportDataBtn: document.getElementById('exportDataBtn'),
         importDataBtn: document.getElementById('importDataBtn'),
         importDataInput: document.getElementById('importDataInput'),
+        captchaWrap: document.getElementById('captchaWrap'),
+        turnstileWidget: document.getElementById('turnstileWidget'),
+        linkExpiryHint: document.getElementById('linkExpiryHint'),
         installBtn: document.getElementById('installBtn'),
         startTimerBtn: document.getElementById('startTimerBtn'),
         pauseTimerBtn: document.getElementById('pauseTimerBtn'),
@@ -878,6 +896,12 @@
         suspendDraftSave: false,
         draftTimer: null,
         deferredInstallPrompt: null,
+        restoredFromShortlink: null,
+        captcha: {
+          enabled: false,
+          widgetId: null,
+          token: ''
+        },
         history: loadHistory(),
         round: {
           enabled: false,
@@ -1568,6 +1592,125 @@
         return bytes;
       }
 
+      function getSidKeyFromHash() {
+        const hash = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : window.location.hash;
+        const params = new URLSearchParams(hash);
+        return params.get('k');
+      }
+
+      function describeExpiry(expiresAt) {
+        if (!expiresAt) return '';
+        const expireMs = new Date(expiresAt).getTime();
+        if (!Number.isFinite(expireMs)) return '';
+        const diff = expireMs - Date.now();
+        if (diff <= 0) {
+          return '该短链已过期。请让对方重新生成。';
+        }
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const days = Math.floor(hours / 24);
+        if (days > 0) {
+          return `短链剩余有效期约 ${days} 天 ${hours % 24} 小时。`;
+        }
+        return `短链剩余有效期约 ${Math.max(1, hours)} 小时。`;
+      }
+
+      function updateExpiryHint(expiresAt) {
+        refs.linkExpiryHint.textContent = describeExpiry(expiresAt);
+      }
+
+      function isWebCryptoReady() {
+        return Boolean(window.isSecureContext && window.crypto && window.crypto.subtle);
+      }
+
+      async function encryptStateForShortlink(state) {
+        if (!isWebCryptoReady()) {
+          throw new Error('web crypto unavailable');
+        }
+        const keyBytes = new Uint8Array(32);
+        crypto.getRandomValues(keyBytes);
+        const iv = new Uint8Array(12);
+        crypto.getRandomValues(iv);
+        const cryptoKey = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
+        const plain = new TextEncoder().encode(JSON.stringify(state));
+        const encrypted = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, plain));
+        return {
+          key: uint8ToBase64Url(keyBytes),
+          sealed: {
+            v: 1,
+            alg: 'AES-GCM',
+            iv: uint8ToBase64Url(iv),
+            ct: uint8ToBase64Url(encrypted)
+          }
+        };
+      }
+
+      async function decryptStateFromSealed(sealed, keyBase64Url) {
+        if (!sealed || !sealed.iv || !sealed.ct || !keyBase64Url) {
+          throw new Error('invalid sealed data');
+        }
+        if (!isWebCryptoReady()) {
+          throw new Error('web crypto unavailable');
+        }
+        const keyBytes = base64UrlToUint8(keyBase64Url);
+        const iv = base64UrlToUint8(sealed.iv);
+        const ct = base64UrlToUint8(sealed.ct);
+        const cryptoKey = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['decrypt']);
+        const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, ct);
+        return JSON.parse(new TextDecoder().decode(decrypted));
+      }
+
+      function setupCaptcha() {
+        if (!TURNSTILE_SITE_KEY) {
+          return;
+        }
+        refs.captchaWrap.classList.remove('hidden');
+        appState.captcha.enabled = true;
+        let retries = 0;
+        const mount = () => {
+          if (!window.turnstile || appState.captcha.widgetId) return;
+          appState.captcha.widgetId = window.turnstile.render(refs.turnstileWidget, {
+            sitekey: TURNSTILE_SITE_KEY,
+            theme: 'light',
+            callback(token) {
+              appState.captcha.token = token;
+            },
+            'expired-callback'() {
+              appState.captcha.token = '';
+            },
+            'error-callback'() {
+              appState.captcha.token = '';
+            }
+          });
+        };
+        mount();
+        if (appState.captcha.widgetId) return;
+        const timer = setInterval(() => {
+          retries += 1;
+          mount();
+          if (appState.captcha.widgetId || retries > 50) {
+            clearInterval(timer);
+          }
+        }, 200);
+      }
+
+      function getCaptchaTokenOrThrow() {
+        if (!appState.captcha.enabled) return '';
+        const token =
+          appState.captcha.token ||
+          (window.turnstile && appState.captcha.widgetId !== null ? window.turnstile.getResponse(appState.captcha.widgetId) : '');
+        if (!token) {
+          throw new Error('captcha required');
+        }
+        return token;
+      }
+
+      function resetCaptcha() {
+        if (appState.captcha.enabled && window.turnstile && appState.captcha.widgetId !== null) {
+          window.turnstile.reset(appState.captcha.widgetId);
+        }
+        appState.captcha.token = '';
+      }
+
       async function compressToBase64Url(text) {
         if (!window.CompressionStream) {
           throw new Error('CompressionStream unsupported');
@@ -1594,10 +1737,11 @@
         return new TextDecoder().decode(out);
       }
 
-      async function encodeStateToUrl() {
-        const stateJson = JSON.stringify(getState());
+      async function encodeStateToUrl(stateOverride) {
+        const stateJson = JSON.stringify(stateOverride || getState());
         const url = new URL(window.location.href);
         url.search = '';
+        url.hash = '';
         try {
           const zipped = await compressToBase64Url(stateJson);
           url.searchParams.set('z', zipped);
@@ -1610,15 +1754,28 @@
       }
 
       async function createShortLinkFromBackend() {
-        const payload = {
-          state: getState()
-        };
+        let payload = {};
+        let sidKey = '';
+        if (isWebCryptoReady()) {
+          const encrypted = await encryptStateForShortlink(getState());
+          payload = { sealed: encrypted.sealed };
+          sidKey = encrypted.key;
+        } else {
+          payload = { state: getState() };
+        }
+        const captchaToken = getCaptchaTokenOrThrow();
+        if (captchaToken) {
+          payload.captchaToken = captchaToken;
+        }
         const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
         if (!resp.ok) {
+          if (resp.status === 403 && appState.captcha.enabled) {
+            throw new Error('captcha verification failed');
+          }
           throw new Error(`shortlink create failed: ${resp.status}`);
         }
         const data = await resp.json();
@@ -1628,7 +1785,15 @@
         const url = new URL(window.location.href);
         url.search = '';
         url.searchParams.set('sid', data.id);
-        return url.toString();
+        if (sidKey) {
+          url.hash = `k=${sidKey}`;
+        }
+        resetCaptcha();
+        updateExpiryHint(data.expiresAt);
+        return {
+          url: url.toString(),
+          expiresAt: data.expiresAt || ''
+        };
       }
 
       async function decodeStateFromUrl() {
@@ -1637,10 +1802,31 @@
           const sid = params.get('sid');
           try {
             const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks/${encodeURIComponent(sid)}`);
+            if (resp.status === 404) {
+              refs.shareHint.textContent = '短链不存在或已过期，请让对方重新生成。';
+              updateExpiryHint('');
+              return null;
+            }
             if (resp.ok) {
               const data = await resp.json();
+              if (data && data.sealed) {
+                const sidKey = getSidKeyFromHash();
+                if (!sidKey) {
+                  refs.shareHint.textContent = '该短链为加密分享，请使用完整链接（含 #k=...）。';
+                  return null;
+                }
+                const state = await decryptStateFromSealed(data.sealed, sidKey);
+                appState.restoredFromShortlink = { sid, expiresAt: data.expiresAt || '' };
+                refs.copyRestoreBtn.classList.remove('hidden');
+                refs.shareHint.textContent = '已从加密短链恢复内容。';
+                updateExpiryHint(data.expiresAt);
+                return state;
+              }
               if (data && data.state) {
+                appState.restoredFromShortlink = { sid, expiresAt: data.expiresAt || '' };
+                refs.copyRestoreBtn.classList.remove('hidden');
                 refs.shareHint.textContent = '已从后端短链恢复内容。';
+                updateExpiryHint(data.expiresAt);
                 return data.state;
               }
             }
@@ -1694,9 +1880,17 @@
         refs.resultTiny.textContent = copied ? '已复制到剪贴板。' : '复制失败，请手动复制。';
       }
 
+      async function copyRestoreDraftLink() {
+        const url = await encodeStateToUrl(getState());
+        refs.shareUrl.value = url;
+        const copied = await copyToClipboard(url);
+        refs.shareHint.textContent = copied ? '已复制恢复草稿链接。' : '恢复草稿链接生成成功，可手动复制。';
+      }
+
       async function buildShareLink() {
         const url = await encodeStateToUrl();
         refs.shareUrl.value = url;
+        updateExpiryHint('');
         const copied = await copyToClipboard(url);
         refs.shareHint.textContent = copied ? `${refs.shareHint.textContent} 链接已复制。` : `${refs.shareHint.textContent} 可手动复制。`;
         bumpMetric('shares');
@@ -1705,13 +1899,17 @@
 
       async function buildShortShareLink() {
         try {
-          const url = await createShortLinkFromBackend();
-          refs.shareUrl.value = url;
-          const copied = await copyToClipboard(url);
-          refs.shareHint.textContent = copied ? '已生成后端短链并复制。' : '已生成后端短链，可手动复制。';
+          const result = await createShortLinkFromBackend();
+          refs.shareUrl.value = result.url;
+          const copied = await copyToClipboard(result.url);
+          refs.shareHint.textContent = copied ? '已生成加密后端短链并复制。' : '已生成加密后端短链，可手动复制。';
           bumpMetric('shares');
-          return url;
-        } catch {
+          return result.url;
+        } catch (error) {
+          if (String(error && error.message || '').includes('captcha')) {
+            refs.shareHint.textContent = '请先通过人机验证，再生成后端短链。';
+            return '';
+          }
           refs.shareHint.textContent = '后端短链暂不可用，改用压缩链接。';
           return buildShareLink();
         }
@@ -1867,6 +2065,7 @@
         refs.clearBtn.addEventListener('click', clearForm);
         refs.restoreDraftBtn.addEventListener('click', restoreDraft);
         refs.copyBtn.addEventListener('click', copySentence);
+        refs.copyRestoreBtn.addEventListener('click', copyRestoreDraftLink);
         refs.shareLinkBtn.addEventListener('click', buildShareLink);
         refs.shortLinkBtn.addEventListener('click', buildShortShareLink);
         refs.nativeShareBtn.addEventListener('click', nativeShare);
@@ -1914,7 +2113,9 @@
         renderTemplateLibrary();
         attachEvents();
         setupInstallPrompt();
+        setupCaptcha();
         renderHistory();
+        updateExpiryHint('');
         await registerServiceWorker();
 
         appState.metrics.sessions += 1;
@@ -1924,7 +2125,9 @@
         const stateFromUrl = await decodeStateFromUrl();
         if (stateFromUrl) {
           applyState(stateFromUrl);
-          refs.shareHint.textContent = '已从分享链接恢复内容。';
+          if (!appState.restoredFromShortlink) {
+            refs.shareHint.textContent = '已从分享链接恢复内容。';
+          }
         } else {
           loadDraft();
         }

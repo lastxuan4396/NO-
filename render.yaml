@@ -5,7 +5,7 @@ services:
     plan: free
     region: oregon
     buildCommand: npm ci
-    startCommand: npm start
+    startCommand: npm run start:prod
     envVars:
       - key: NODE_VERSION
         value: "20"
@@ -27,6 +27,10 @@ services:
         value: https://nvc-couple-share.onrender.com
       - key: PUBLIC_BASE_URL
         value: https://nvc-couple-share.onrender.com
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
       - key: DATABASE_URL
         fromDatabase:
           name: nvc-shortlinks-db
@@ -40,6 +44,8 @@ services:
     envVars:
       - key: NVC_API_BASE
         value: https://nvc-couple-links.onrender.com
+      - key: NVC_TURNSTILE_SITE_KEY
+        value: ""
     routes:
       - type: rewrite
         source: /*

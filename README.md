@@ -3,7 +3,8 @@
 情侣非暴力沟通（NVC）练习页，支持：
 - 四步表达（观察-感受-需要-请求）
 - A/B 回合模式与复述确认
-- 后端短链分享（带过期时间）
+- 后端短链分享（默认端到端加密 + 过期时间）
+- 人机验证（Turnstile，可选）
 - 历史时间轴
 - JSON 导入/导出（含 schema 版本迁移）
 - PWA 安装与离线缓存
@@ -15,6 +16,7 @@
 - Storage:
   - 优先使用 Postgres（`DATABASE_URL`）
   - 兜底文件存储（`shortlinks-store.json`）
+- Migrations: `node-pg-migrate`
 - E2E: Playwright
 - CI: GitHub Actions
 
@@ -28,10 +30,24 @@ npm start
 
 默认端口：`10000`
 
+## Database Migrations
+
+```bash
+npm run migrate:up
+npm run migrate:down
+```
+
+生产推荐启动命令：
+
+```bash
+npm run start:prod
+```
+
 ## Environment Variables
 
 ### Frontend (static build)
 - `NVC_API_BASE`: 前端调用短链 API 的基地址（示例：`https://nvc-couple-links.onrender.com`）
+- `NVC_TURNSTILE_SITE_KEY`: Turnstile Site Key（可选）
 
 ### Backend
 - `DATABASE_URL`: Postgres 连接串（配置后自动启用 Postgres）
@@ -43,6 +59,7 @@ npm start
 - `RATE_LIMIT_WINDOW_MS`: 限流窗口，默认 `60000`
 - `RATE_LIMIT_WRITE_MAX`: 写接口窗口内最大请求，默认 `40`
 - `RATE_LIMIT_READ_MAX`: 读接口窗口内最大请求，默认 `160`
+- `TURNSTILE_SECRET_KEY`: Turnstile Secret Key（可选，设置后启用验证）
 - `SENTRY_DSN`: 可选，配置后启用后端异常上报
 - `SENTRY_ENV`: 可选，Sentry 环境名
 
@@ -54,6 +71,17 @@ npm start
 - `version` 映射为 `schemaVersion`
 - `history` 条目补齐 `roundNo`、字符串字段裁剪
 - `metrics` 做数字归一化
+
+## Monitoring
+
+- 健康检查：`GET /healthz`
+- 指标端点：`GET /metrics`
+- 已接入 Sentry SDK（配置 `SENTRY_DSN` 后生效）
+
+建议告警：
+- Render 部署失败告警
+- `/healthz` 非 200 告警
+- `/metrics` 中 `internal_error_total` 或 `ratelimit_block_total` 异常上升
 
 ## Tests
 
@@ -92,6 +120,7 @@ npx playwright install chromium
 
 ## Security Notes
 
-- 请只使用最小权限 token。 
+- 短链默认使用前端 AES-GCM 加密，数据库只保存密文。
+- 请只使用最小权限 token。
 - 若 token 曾在聊天或截图中暴露，务必立即 **Revoke 并重建**。
-- 建议打开 Render 告警（部署失败、服务异常）并配合 Sentry 监控。
+- 建议开启 Render 告警并配合 Sentry 监控。
