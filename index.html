@@ -736,6 +736,7 @@
       </section>
     </main>
 
+    <script src="/config.js"></script>
     <script>
       const feelings = ['委屈', '失落', '难过', '焦虑', '紧张', '沮丧', '生气', '孤单', '疲惫', '害怕', '困惑', '惭愧', '内疚', '欣慰', '安心', '开心', '期待', '感动', '被忽略'];
       const needs = ['被看见', '被尊重', '理解', '安全感', '连接', '陪伴', '一致性', '稳定', '信任', '支持', '自由', '空间', '体贴', '合作', '诚实', '成长', '归属感', '轻松'];
@@ -801,10 +802,19 @@
       const STORAGE_KEY = 'nvc-couple-draft-v3';
       const METRICS_KEY = 'nvc-couple-metrics-v1';
       const HISTORY_KEY = 'nvc-couple-history-v1';
+      const EXPORT_SCHEMA_VERSION = 2;
+
+      function normalizeApiBase(raw) {
+        return String(raw || '')
+          .trim()
+          .replace(/\/+$/g, '');
+      }
+
       const SHORTLINK_API_BASE =
-        window.location.hostname === 'nvc-couple-share.onrender.com'
+        normalizeApiBase(window.__NVC_API_BASE__) ||
+        (window.location.hostname === 'nvc-couple-share.onrender.com'
           ? 'https://nvc-couple-links.onrender.com'
-          : window.location.origin;
+          : normalizeApiBase(window.location.origin));
 
       const refs = {
         observation: document.getElementById('observation'),
@@ -1454,13 +1464,63 @@
         }
       }
 
+      function normalizeMetrics(rawMetrics) {
+        const raw = rawMetrics || {};
+        return {
+          sessions: Number(raw.sessions || 0),
+          completed: Number(raw.completed || 0),
+          shares: Number(raw.shares || 0),
+          exports: Number(raw.exports || 0),
+          roundSuccess: Number(raw.roundSuccess || 0)
+        };
+      }
+
+      function normalizeHistoryEntry(entry, fallbackRoundNo) {
+        const safe = entry && typeof entry === 'object' ? entry : {};
+        const parsedRoundNo = Number(safe.roundNo || 0);
+        return {
+          roundNo: parsedRoundNo > 0 ? parsedRoundNo : fallbackRoundNo,
+          createdAt: safe.createdAt || new Date().toISOString(),
+          speakerA: String(safe.speakerA || 'A').slice(0, 24),
+          speakerB: String(safe.speakerB || 'B').slice(0, 24),
+          aSentence: String(safe.aSentence || '').slice(0, 1200),
+          bSentence: String(safe.bSentence || '').slice(0, 1200),
+          echo: String(safe.echo || '').slice(0, 800)
+        };
+      }
+
+      function normalizeHistoryList(rawHistory) {
+        if (!Array.isArray(rawHistory)) return [];
+        return rawHistory
+          .slice(0, 200)
+          .map((entry, idx) => normalizeHistoryEntry(entry, rawHistory.length - idx));
+      }
+
+      function migrateImportedData(rawData) {
+        if (!rawData || typeof rawData !== 'object') {
+          throw new Error('invalid data');
+        }
+        const sourceSchema = Number(rawData.schemaVersion || rawData.version || 1);
+        if (sourceSchema !== 1 && sourceSchema !== 2) {
+          throw new Error(`unsupported schema version: ${sourceSchema}`);
+        }
+        return {
+          schemaVersion: EXPORT_SCHEMA_VERSION,
+          draft: rawData.draft || null,
+          metrics: normalizeMetrics(rawData.metrics),
+          history: normalizeHistoryList(rawData.history),
+          exportedAt: rawData.exportedAt || null
+        };
+      }
+
       function exportAllData() {
         const data = {
-          version: 1,
+          schemaVersion: EXPORT_SCHEMA_VERSION,
+          app: 'nvc-couple-share',
           exportedAt: new Date().toISOString(),
           draft: getDraftState(),
-          metrics: appState.metrics,
-          history: appState.history
+          metrics: normalizeMetrics(appState.metrics),
+          history: normalizeHistoryList(appState.history)
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -1473,28 +1533,20 @@
 
       async function importAllDataFromFile(file) {
         const text = await file.text();
-        const data = JSON.parse(text);
+        const imported = migrateImportedData(JSON.parse(text));
 
-        if (data && data.draft) {
-          applyDraft(data.draft);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data.draft));
+        if (imported.draft) {
+          applyDraft(imported.draft);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(imported.draft));
         }
-        if (data && data.metrics) {
-          appState.metrics = {
-            sessions: Number(data.metrics.sessions || 0),
-            completed: Number(data.metrics.completed || 0),
-            shares: Number(data.metrics.shares || 0),
-            exports: Number(data.metrics.exports || 0),
-            roundSuccess: Number(data.metrics.roundSuccess || 0)
-          };
-          saveMetrics();
-          renderMetrics();
-        }
-        if (data && Array.isArray(data.history)) {
-          appState.history = data.history.slice(0, 200);
-          saveHistory();
-          renderHistory();
-        }
+        appState.metrics = imported.metrics;
+        saveMetrics();
+        renderMetrics();
+
+        appState.history = imported.history;
+        saveHistory();
+        renderHistory();
+        return imported;
       }
 
       function uint8ToBase64Url(uint8) {
@@ -1826,8 +1878,8 @@
           const file = event.target.files && event.target.files[0];
           if (!file) return;
           try {
-            await importAllDataFromFile(file);
-            refs.shareHint.textContent = '已导入数据。';
+            const imported = await importAllDataFromFile(file);
+            refs.shareHint.textContent = `已导入数据（schema v${imported.schemaVersion}）。`;
             updateAll();
           } catch {
             refs.shareHint.textContent = '导入失败，请确认 JSON 文件格式。';

@@ -4,9 +4,16 @@
   "private": true,
   "description": "NVC couple communication page",
   "scripts": {
-    "start": "node server.js"
+    "build:config": "node scripts/generate-config.js",
+    "start": "node server.js",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "@sentry/node": "^10.6.0",
+    "express": "^4.21.2",
+    "pg": "^8.16.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.54.2"
   }
 }
