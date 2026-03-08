@@ -1,0 +1,32 @@
+name: Uptime Monitor
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check backend health
+        run: |
+          curl -fsS https://nvc-couple-links.onrender.com/healthz > /tmp/health.json
+          cat /tmp/health.json
+          python3 - <<'PY'
+import json
+with open('/tmp/health.json', 'r', encoding='utf-8') as f:
+    data = json.load(f)
+assert data.get('ok') is True, 'health ok != true'
+assert data.get('store') in ('postgres', 'file'), 'unexpected storage mode'
+PY
+
+      - name: Check metrics endpoint
+        run: |
+          curl -fsS https://nvc-couple-links.onrender.com/metrics | head -n 20
+
+      - name: Check frontend availability
+        run: |
+          curl -fsS https://nvc-couple-share.onrender.com/config.js | grep -q '__NVC_API_BASE__'
