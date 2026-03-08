@@ -16,12 +16,12 @@ jobs:
           curl -fsS https://nvc-couple-links.onrender.com/healthz > /tmp/health.json
           cat /tmp/health.json
           python3 - <<'PY'
-import json
-with open('/tmp/health.json', 'r', encoding='utf-8') as f:
-    data = json.load(f)
-assert data.get('ok') is True, 'health ok != true'
-assert data.get('store') in ('postgres', 'file'), 'unexpected storage mode'
-PY
+          import json
+          with open('/tmp/health.json', 'r', encoding='utf-8') as f:
+              data = json.load(f)
+          assert data.get('ok') is True, 'health ok != true'
+          assert data.get('store') in ('postgres', 'file'), 'unexpected storage mode'
+          PY
 
       - name: Check metrics endpoint
         run: |
