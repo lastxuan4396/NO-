@@ -119,6 +119,11 @@
         border-color: #fdba74;
       }
 
+      .mini {
+        padding: 5px 10px;
+        font-size: 12px;
+      }
+
       .layout {
         padding: 18px;
         display: grid;
@@ -332,6 +337,167 @@
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
+      }
+
+      .inline-tools {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tag-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .tag-item {
+        border: 1px solid rgba(15, 118, 110, 0.3);
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 12px;
+        color: #0f766e;
+        background: #f0fdfa;
+        cursor: pointer;
+      }
+
+      .template-tools {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        margin: 8px 0;
+      }
+
+      .share-privacy,
+      .share-ops {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .share-privacy label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #334155;
+      }
+
+      .collab-box {
+        border: 1px solid rgba(79, 70, 229, 0.2);
+        border-radius: 12px;
+        padding: 10px;
+        background: #f8f7ff;
+        display: grid;
+        gap: 8px;
+      }
+
+      .collab-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .presence-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .presence-item {
+        border-radius: 999px;
+        background: #ede9fe;
+        color: #5b21b6;
+        font-size: 12px;
+        padding: 3px 8px;
+      }
+
+      .review-board {
+        border: 1px solid rgba(30, 64, 175, 0.2);
+        border-radius: 12px;
+        padding: 10px;
+        background: #f8fbff;
+      }
+
+      .todo-panel {
+        border: 1px solid rgba(14, 116, 144, 0.2);
+        border-radius: 12px;
+        padding: 10px;
+        background: #f0f9ff;
+      }
+
+      .todo-list {
+        display: grid;
+        gap: 8px;
+        max-height: 220px;
+        overflow: auto;
+      }
+
+      .todo-item {
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 10px;
+        background: #fff;
+        padding: 8px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .todo-item.done {
+        opacity: 0.65;
+      }
+
+      .todo-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .todo-head b {
+        font-size: 13px;
+      }
+
+      .todo-meta {
+        font-size: 11px;
+        color: #64748b;
+      }
+
+      .combo-board {
+        border: 1px solid rgba(190, 24, 93, 0.2);
+        border-radius: 12px;
+        background: #fff1f2;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .combo-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .combo-item {
+        border: 1px solid rgba(244, 114, 182, 0.4);
+        border-radius: 9px;
+        background: #fff;
+        padding: 7px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .escalation {
+        border: 1px solid rgba(220, 38, 38, 0.3);
+        border-radius: 12px;
+        padding: 10px;
+        background: #fff1f2;
+        display: grid;
+        gap: 6px;
+      }
+
+      .escalation b {
+        color: #991b1b;
       }
 
       .data-row {
@@ -552,7 +718,11 @@
         }
 
         .round-row,
-        .metric-grid {
+        .metric-grid,
+        .share-privacy,
+        .share-ops,
+        .template-tools,
+        .collab-row {
           grid-template-columns: 1fr;
         }
       }
@@ -571,10 +741,14 @@
           <button class="btn-plain" id="clearBtn">清空输入</button>
           <button class="btn-plain" id="restoreDraftBtn">恢复草稿</button>
           <button class="btn-plain" id="copyBtn">复制表达句</button>
+          <button class="btn-plain" id="voiceObsBtn">语音填观察</button>
+          <button class="btn-plain" id="voiceReqBtn">语音填请求</button>
+          <button class="btn-plain" id="voiceStopBtn">停止语音</button>
           <button class="btn-plain" id="shareLinkBtn">生成压缩分享链接</button>
           <button class="btn-plain" id="shortLinkBtn">生成后端短链</button>
           <button class="btn-plain" id="nativeShareBtn">一键分享</button>
           <button class="btn-warn" id="exportImageBtn">导出结果图片</button>
+          <button class="btn-warn" id="exportReportBtn">导出复盘报告</button>
           <button class="btn-plain" id="exportDataBtn">导出数据JSON</button>
           <button class="btn-plain" id="importDataBtn">导入数据JSON</button>
           <button class="btn-plain hidden" id="copyRestoreBtn">一键复制恢复草稿链接</button>
@@ -610,6 +784,10 @@
             <p class="step-tip">优先说情绪，不是指责。可多选 1-3 项。</p>
             <div class="chip-grid" id="feelingChips"></div>
             <input id="customFeeling" placeholder="也可以补充：例如 失落、慌张" />
+            <div class="inline-tools">
+              <button class="btn-plain mini" id="addFeelingWordBtn">加入感受词库</button>
+            </div>
+            <div id="customFeelingWords" class="tag-list"></div>
           </div>
 
           <div class="step">
@@ -620,6 +798,10 @@
             <p class="step-tip">需要是普遍人性需求，不是“你必须”。可多选 1-3 项。</p>
             <div class="chip-grid" id="needChips"></div>
             <input id="customNeed" placeholder="也可以补充：例如 被理解、稳定感" />
+            <div class="inline-tools">
+              <button class="btn-plain mini" id="addNeedWordBtn">加入需要词库</button>
+            </div>
+            <div id="customNeedWords" class="tag-list"></div>
           </div>
 
           <div class="step" style="margin-bottom: 0;">
@@ -640,7 +822,12 @@
           <div class="template-board">
             <h3 class="result-title" style="margin: 0;">情境模板库</h3>
             <p class="tiny">按类目筛选后点卡片即可填充（用于快速开始）。</p>
+            <div class="template-tools">
+              <input id="templateSearch" placeholder="搜索模板标题 / 场景关键词" />
+              <button class="btn-plain mini" id="saveTemplateBtn">保存当前为模板</button>
+            </div>
             <div id="templateCategories" class="template-cats"></div>
+            <div id="favoriteTemplates" class="template-cats"></div>
             <div id="templateCards" class="template-grid"></div>
           </div>
         </article>
@@ -682,6 +869,35 @@
               <input id="shareUrl" class="mono" readonly value="" />
               <p class="tiny" id="linkExpiryHint"></p>
             </div>
+            <div class="share-privacy">
+              <label><input type="checkbox" id="privacyOneTime" />一次性链接</label>
+              <input id="privacyMaxViews" type="number" min="0" max="20" placeholder="最大访问次数(0=不限)" />
+              <input id="privacyPin" class="mono" placeholder="PIN码（可选）" />
+            </div>
+            <div class="share-ops">
+              <input id="renewDays" type="number" min="1" max="180" value="30" placeholder="续期天数" />
+              <button class="btn-plain mini" id="renewLinkBtn">续期当前短链</button>
+              <button class="btn-plain mini" id="cloneLinkBtn">克隆当前短链</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="data-row">
+            <h3 class="result-title">实时协作房间</h3>
+            <div class="collab-box">
+              <div class="collab-row">
+                <input id="roomIdInput" placeholder="房间ID（例：our-room-01）" />
+                <input id="roomNameInput" placeholder="你的昵称" />
+              </div>
+              <div class="timer-actions">
+                <button class="btn-main mini" id="roomJoinBtn">加入房间</button>
+                <button class="btn-plain mini" id="roomLeaveBtn">离开房间</button>
+                <button class="btn-plain mini" id="roomSyncBtn">同步当前内容</button>
+              </div>
+              <p class="tiny" id="roomStatusText">未连接协作房间。</p>
+              <div id="roomPresenceList" class="presence-list"></div>
+            </div>
           </div>
 
           <div class="divider"></div>
@@ -708,6 +924,21 @@
             </div>
           </div>
 
+          <div class="review-board">
+            <h3 class="result-title" style="margin: 0;">周/月复盘看板</h3>
+            <div class="metric-grid" style="margin-top: 8px;">
+              <div class="metric"><b id="wRounds">0</b><span>近7天回合</span></div>
+              <div class="metric"><b id="mRounds">0</b><span>近30天回合</span></div>
+              <div class="metric"><b id="todoOpen">0</b><span>待跟进请求</span></div>
+              <div class="metric"><b id="todoDone">0</b><span>已完成请求</span></div>
+              <div class="metric"><b id="agreeRate">0%</b><span>复述通过率</span></div>
+              <div class="metric"><b id="healthStore">-</b><span>后端存储</span></div>
+            </div>
+            <div class="timer-actions" style="margin-top: 8px;">
+              <button class="btn-plain mini" id="checkHealthBtn">刷新服务状态</button>
+            </div>
+          </div>
+
           <div class="divider"></div>
 
           <div class="history-panel">
@@ -721,6 +952,20 @@
             </div>
           </div>
 
+          <div class="todo-panel">
+            <h3 class="result-title" style="margin: 0;">请求跟进待办</h3>
+            <p class="tiny">把“请求”转成执行清单，避免谈完就忘。</p>
+            <div class="collab-row">
+              <input id="todoTextInput" placeholder="待办内容（默认使用当前请求）" />
+              <input id="todoDateInput" type="date" />
+            </div>
+            <div class="timer-actions">
+              <button class="btn-main mini" id="todoFromRequestBtn">从当前请求加入</button>
+              <button class="btn-plain mini" id="todoAddBtn">新增待办</button>
+            </div>
+            <div id="todoList" class="todo-list"></div>
+          </div>
+
           <section class="timer">
             <h3 class="result-title" style="margin: 0;">3 分钟冷静计时</h3>
             <p class="timer-time" id="timerText">03:00</p>
@@ -731,6 +976,14 @@
               <button class="btn-main" id="startTimerBtn">开始</button>
               <button class="btn-plain" id="pauseTimerBtn">暂停</button>
               <button class="btn-warn" id="resetTimerBtn">重置</button>
+            </div>
+            <div id="escalationPanel" class="escalation hidden">
+              <b>检测到升级风险用语</b>
+              <p class="tiny" id="escalationHint">建议先降温 90 秒，再继续表达。</p>
+              <div class="timer-actions">
+                <button class="btn-warn mini" id="deescalateBtn">开始 90 秒降温</button>
+                <span class="tiny" id="deescalateTimer">01:30</span>
+              </div>
             </div>
           </section>
 
@@ -744,6 +997,15 @@
               <li>用“我感到/我需要”，替代“你就是/你应该”。</li>
               <li>情绪过载时，先暂停 3 分钟再继续。</li>
             </ol>
+          </div>
+
+          <div class="combo-board">
+            <h3 class="result-title" style="margin: 0;">常用组合收藏</h3>
+            <p class="tiny">收藏常用“感受+需要”组合，快速填充。</p>
+            <div class="timer-actions">
+              <button class="btn-main mini" id="saveComboBtn">保存当前组合</button>
+            </div>
+            <div id="comboList" class="combo-list"></div>
           </div>
         </aside>
       </section>
@@ -815,7 +1077,13 @@
       const STORAGE_KEY = 'nvc-couple-draft-v3';
       const METRICS_KEY = 'nvc-couple-metrics-v1';
       const HISTORY_KEY = 'nvc-couple-history-v1';
+      const TODO_KEY = 'nvc-couple-todo-v1';
+      const CUSTOM_WORDS_KEY = 'nvc-couple-custom-words-v1';
+      const COMBO_KEY = 'nvc-couple-combo-v1';
+      const TEMPLATE_FAVORITES_KEY = 'nvc-couple-template-favorites-v1';
+      const TEMPLATE_EXTRA_KEY = 'nvc-couple-template-extra-v1';
       const EXPORT_SCHEMA_VERSION = 2;
+      const escalationWords = ['离婚', '分手', '滚', '闭嘴', '受够', '讨厌', '恶心', '永远别'];
 
       function normalizeApiBase(raw) {
         return String(raw || '')
@@ -828,6 +1096,9 @@
         (window.location.hostname === 'nvc-couple-share.onrender.com'
           ? 'https://nvc-couple-links.onrender.com'
           : normalizeApiBase(window.location.origin));
+      const SHORTLINK_WS_BASE = SHORTLINK_API_BASE
+        ? SHORTLINK_API_BASE.replace(/^http/i, 'ws')
+        : window.location.origin.replace(/^http/i, 'ws');
       const TURNSTILE_SITE_KEY = String(window.__NVC_TURNSTILE_SITE_KEY__ || '').trim();
 
       const refs = {
@@ -864,14 +1135,38 @@
         clearBtn: document.getElementById('clearBtn'),
         restoreDraftBtn: document.getElementById('restoreDraftBtn'),
         copyBtn: document.getElementById('copyBtn'),
+        voiceObsBtn: document.getElementById('voiceObsBtn'),
+        voiceReqBtn: document.getElementById('voiceReqBtn'),
+        voiceStopBtn: document.getElementById('voiceStopBtn'),
         shareLinkBtn: document.getElementById('shareLinkBtn'),
         shortLinkBtn: document.getElementById('shortLinkBtn'),
         nativeShareBtn: document.getElementById('nativeShareBtn'),
         copyRestoreBtn: document.getElementById('copyRestoreBtn'),
         exportImageBtn: document.getElementById('exportImageBtn'),
+        exportReportBtn: document.getElementById('exportReportBtn'),
         exportDataBtn: document.getElementById('exportDataBtn'),
         importDataBtn: document.getElementById('importDataBtn'),
         importDataInput: document.getElementById('importDataInput'),
+        addFeelingWordBtn: document.getElementById('addFeelingWordBtn'),
+        addNeedWordBtn: document.getElementById('addNeedWordBtn'),
+        customFeelingWords: document.getElementById('customFeelingWords'),
+        customNeedWords: document.getElementById('customNeedWords'),
+        templateSearch: document.getElementById('templateSearch'),
+        saveTemplateBtn: document.getElementById('saveTemplateBtn'),
+        favoriteTemplates: document.getElementById('favoriteTemplates'),
+        privacyOneTime: document.getElementById('privacyOneTime'),
+        privacyMaxViews: document.getElementById('privacyMaxViews'),
+        privacyPin: document.getElementById('privacyPin'),
+        renewDays: document.getElementById('renewDays'),
+        renewLinkBtn: document.getElementById('renewLinkBtn'),
+        cloneLinkBtn: document.getElementById('cloneLinkBtn'),
+        roomIdInput: document.getElementById('roomIdInput'),
+        roomNameInput: document.getElementById('roomNameInput'),
+        roomJoinBtn: document.getElementById('roomJoinBtn'),
+        roomLeaveBtn: document.getElementById('roomLeaveBtn'),
+        roomSyncBtn: document.getElementById('roomSyncBtn'),
+        roomStatusText: document.getElementById('roomStatusText'),
+        roomPresenceList: document.getElementById('roomPresenceList'),
         captchaWrap: document.getElementById('captchaWrap'),
         turnstileWidget: document.getElementById('turnstileWidget'),
         linkExpiryHint: document.getElementById('linkExpiryHint'),
@@ -879,19 +1174,38 @@
         startTimerBtn: document.getElementById('startTimerBtn'),
         pauseTimerBtn: document.getElementById('pauseTimerBtn'),
         resetTimerBtn: document.getElementById('resetTimerBtn'),
+        escalationPanel: document.getElementById('escalationPanel'),
+        escalationHint: document.getElementById('escalationHint'),
+        deescalateBtn: document.getElementById('deescalateBtn'),
+        deescalateTimer: document.getElementById('deescalateTimer'),
         clearHistoryBtn: document.getElementById('clearHistoryBtn'),
         historyList: document.getElementById('historyList'),
+        todoTextInput: document.getElementById('todoTextInput'),
+        todoDateInput: document.getElementById('todoDateInput'),
+        todoFromRequestBtn: document.getElementById('todoFromRequestBtn'),
+        todoAddBtn: document.getElementById('todoAddBtn'),
+        todoList: document.getElementById('todoList'),
+        saveComboBtn: document.getElementById('saveComboBtn'),
+        comboList: document.getElementById('comboList'),
+        checkHealthBtn: document.getElementById('checkHealthBtn'),
         mSessions: document.getElementById('mSessions'),
         mCompleted: document.getElementById('mCompleted'),
         mRate: document.getElementById('mRate'),
         mShare: document.getElementById('mShare'),
         mExport: document.getElementById('mExport'),
-        mRound: document.getElementById('mRound')
+        mRound: document.getElementById('mRound'),
+        wRounds: document.getElementById('wRounds'),
+        mRounds: document.getElementById('mRounds'),
+        todoOpen: document.getElementById('todoOpen'),
+        todoDone: document.getElementById('todoDone'),
+        agreeRate: document.getElementById('agreeRate'),
+        healthStore: document.getElementById('healthStore')
       };
 
       const appState = {
         formLocked: false,
         templateCategory: '全部',
+        templateSearch: '',
         completionCounted: false,
         suspendDraftSave: false,
         draftTimer: null,
@@ -908,12 +1222,134 @@
           phase: 'idle',
           snapshot: null
         },
-        metrics: loadMetrics()
+        metrics: loadMetrics(),
+        todos: loadTodos(),
+        customWords: loadCustomWords(),
+        favoriteCombos: loadCombos(),
+        templateFavorites: loadTemplateFavorites(),
+        templateExtra: loadExtraTemplates(),
+        collab: {
+          ws: null,
+          roomId: '',
+          clientId: '',
+          participants: [],
+          syncTimer: null,
+          suspendNextSync: false
+        },
+        speech: {
+          recog: null,
+          target: null,
+          listening: false
+        },
+        deescalate: {
+          timerId: null,
+          remain: 90
+        },
+        health: {
+          store: '-'
+        }
       };
 
       const totalSeconds = 180;
       let remainSeconds = totalSeconds;
       let timerId = null;
+
+      function loadTodos() {
+        try {
+          const raw = localStorage.getItem(TODO_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(parsed)) return [];
+          return parsed
+            .slice(0, 200)
+            .map((item) => ({
+              id: String(item.id || `${Date.now()}-${Math.random()}`),
+              text: String(item.text || '').slice(0, 240),
+              dueDate: String(item.dueDate || ''),
+              done: Boolean(item.done),
+              createdAt: String(item.createdAt || new Date().toISOString())
+            }))
+            .filter((item) => item.text);
+        } catch {
+          return [];
+        }
+      }
+
+      function saveTodos() {
+        localStorage.setItem(TODO_KEY, JSON.stringify(appState.todos.slice(0, 200)));
+      }
+
+      function loadCustomWords() {
+        try {
+          const raw = localStorage.getItem(CUSTOM_WORDS_KEY);
+          const parsed = raw ? JSON.parse(raw) : {};
+          const normalize = (list) =>
+            (Array.isArray(list) ? list : [])
+              .map((item) => String(item || '').trim().slice(0, 16))
+              .filter(Boolean)
+              .slice(0, 40);
+          return {
+            feelings: normalize(parsed.feelings),
+            needs: normalize(parsed.needs)
+          };
+        } catch {
+          return { feelings: [], needs: [] };
+        }
+      }
+
+      function saveCustomWords() {
+        localStorage.setItem(CUSTOM_WORDS_KEY, JSON.stringify(appState.customWords));
+      }
+
+      function loadCombos() {
+        try {
+          const raw = localStorage.getItem(COMBO_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(parsed)) return [];
+          return parsed
+            .slice(0, 50)
+            .map((item) => ({
+              id: String(item.id || `${Date.now()}-${Math.random()}`),
+              title: String(item.title || '').slice(0, 40),
+              feelings: (Array.isArray(item.feelings) ? item.feelings : []).slice(0, 3).map((v) => String(v || '')),
+              needs: (Array.isArray(item.needs) ? item.needs : []).slice(0, 3).map((v) => String(v || ''))
+            }))
+            .filter((item) => item.feelings.length || item.needs.length);
+        } catch {
+          return [];
+        }
+      }
+
+      function saveCombos() {
+        localStorage.setItem(COMBO_KEY, JSON.stringify(appState.favoriteCombos.slice(0, 50)));
+      }
+
+      function loadTemplateFavorites() {
+        try {
+          const raw = localStorage.getItem(TEMPLATE_FAVORITES_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed.map((item) => String(item || '')).slice(0, 80) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveTemplateFavorites() {
+        localStorage.setItem(TEMPLATE_FAVORITES_KEY, JSON.stringify(appState.templateFavorites.slice(0, 80)));
+      }
+
+      function loadExtraTemplates() {
+        try {
+          const raw = localStorage.getItem(TEMPLATE_EXTRA_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed.slice(0, 80) : [];
+        } catch {
+          return [];
+        }
+      }
+
+      function saveExtraTemplates() {
+        localStorage.setItem(TEMPLATE_EXTRA_KEY, JSON.stringify(appState.templateExtra.slice(0, 80)));
+      }
 
       function loadMetrics() {
         try {
@@ -953,6 +1389,22 @@
         refs.mRound.textContent = String(m.roundSuccess);
         const rate = m.sessions ? Math.min(100, Math.round((m.completed / m.sessions) * 100)) : 0;
         refs.mRate.textContent = `${rate}%`;
+
+        const now = Date.now();
+        const weekMs = 7 * 24 * 60 * 60 * 1000;
+        const monthMs = 30 * 24 * 60 * 60 * 1000;
+        const rounds7 = appState.history.filter((item) => now - new Date(item.createdAt || 0).getTime() <= weekMs).length;
+        const rounds30 = appState.history.filter((item) => now - new Date(item.createdAt || 0).getTime() <= monthMs).length;
+        refs.wRounds.textContent = String(rounds7);
+        refs.mRounds.textContent = String(rounds30);
+
+        const done = appState.todos.filter((item) => item.done).length;
+        const open = Math.max(0, appState.todos.length - done);
+        refs.todoOpen.textContent = String(open);
+        refs.todoDone.textContent = String(done);
+        const agreeRate = m.sessions ? Math.min(100, Math.round((m.roundSuccess / m.sessions) * 100)) : 0;
+        refs.agreeRate.textContent = `${agreeRate}%`;
+        refs.healthStore.textContent = appState.health.store || '-';
       }
 
       function loadHistory() {
@@ -989,6 +1441,7 @@
       function renderHistory() {
         if (!appState.history.length) {
           refs.historyList.innerHTML = '<p class=\"tiny\">暂无历史记录。</p>';
+          renderMetrics();
           return;
         }
 
@@ -1006,6 +1459,60 @@
             `;
           })
           .join('');
+        renderMetrics();
+      }
+
+      function renderTodoList() {
+        if (!appState.todos.length) {
+          refs.todoList.innerHTML = '<p class="tiny">暂无待办，建议把“请求”转成行动项。</p>';
+          renderMetrics();
+          return;
+        }
+        refs.todoList.innerHTML = appState.todos
+          .map((item) => {
+            const due = item.dueDate ? `截止：${item.dueDate}` : '无截止日期';
+            return `
+              <article class="todo-item ${item.done ? 'done' : ''}">
+                <div class="todo-head">
+                  <b>${escapeHtml(item.text)}</b>
+                  <label class="tiny"><input type="checkbox" data-todo-toggle="${item.id}" ${item.done ? 'checked' : ''}/>完成</label>
+                </div>
+                <div class="todo-meta">${escapeHtml(due)}</div>
+                <button class="btn-plain mini" data-todo-remove="${item.id}">删除</button>
+              </article>
+            `;
+          })
+          .join('');
+        renderMetrics();
+      }
+
+      function addTodo(text, dueDate = '') {
+        const clean = String(text || '').trim().slice(0, 240);
+        if (!clean) return false;
+        appState.todos.unshift({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          text: clean,
+          dueDate: String(dueDate || ''),
+          done: false,
+          createdAt: new Date().toISOString()
+        });
+        appState.todos = appState.todos.slice(0, 200);
+        saveTodos();
+        renderTodoList();
+        return true;
+      }
+
+      function addTodoFromCurrentRequest() {
+        const request = refs.request.value.trim();
+        const text = refs.todoTextInput.value.trim() || request;
+        if (!text) {
+          refs.shareHint.textContent = '没有可加入待办的请求内容。';
+          return;
+        }
+        const ok = addTodo(text, refs.todoDateInput.value);
+        if (!ok) return;
+        refs.todoTextInput.value = '';
+        refs.shareHint.textContent = '已加入请求待办。';
       }
 
       function renderChips(containerId, values) {
@@ -1035,6 +1542,128 @@
           .map((item) => item.trim())
           .filter(Boolean);
         return [...baseList, ...extra].slice(0, 3);
+      }
+
+      function pushCustomWord(type, rawWord) {
+        const word = String(rawWord || '').trim().slice(0, 16);
+        if (!word) return false;
+        const list = type === 'feelings' ? appState.customWords.feelings : appState.customWords.needs;
+        if (list.includes(word)) return false;
+        list.unshift(word);
+        if (list.length > 40) list.length = 40;
+        saveCustomWords();
+        renderCustomWords();
+        return true;
+      }
+
+      function appendWordToInput(inputEl, word) {
+        const current = inputEl.value.trim();
+        inputEl.value = current ? `${current}、${word}` : word;
+        updateAll();
+      }
+
+      function renderCustomWords() {
+        refs.customFeelingWords.innerHTML = appState.customWords.feelings
+          .map((word) => `<span class="tag-item" data-custom-word="feel:${escapeHtml(word)}">${escapeHtml(word)}</span>`)
+          .join('');
+        refs.customNeedWords.innerHTML = appState.customWords.needs
+          .map((word) => `<span class="tag-item" data-custom-word="need:${escapeHtml(word)}">${escapeHtml(word)}</span>`)
+          .join('');
+      }
+
+      function saveCurrentCombo() {
+        const feelingsNow = mergeList(getSelectedValues('feelingChips'), refs.customFeeling.value);
+        const needsNow = mergeList(getSelectedValues('needChips'), refs.customNeed.value);
+        if (!feelingsNow.length && !needsNow.length) {
+          refs.shareHint.textContent = '先选一些感受/需要，再保存组合。';
+          return;
+        }
+        const title = `组合 ${new Date().toLocaleDateString('zh-CN')}`;
+        appState.favoriteCombos.unshift({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          title,
+          feelings: feelingsNow,
+          needs: needsNow
+        });
+        appState.favoriteCombos = appState.favoriteCombos.slice(0, 50);
+        saveCombos();
+        renderComboList();
+        refs.shareHint.textContent = '已保存常用组合。';
+      }
+
+      function renderComboList() {
+        if (!appState.favoriteCombos.length) {
+          refs.comboList.innerHTML = '<p class="tiny">暂无收藏组合。</p>';
+          return;
+        }
+        refs.comboList.innerHTML = appState.favoriteCombos
+          .map(
+            (item) => `
+              <div class="combo-item">
+                <span class="tiny">${escapeHtml(item.feelings.join('、') || '无感受')} ｜ ${escapeHtml(item.needs.join('、') || '无需要')}</span>
+                <div class="inline-tools">
+                  <button class="btn-plain mini" data-combo-apply="${item.id}">套用</button>
+                  <button class="btn-plain mini" data-combo-remove="${item.id}">删除</button>
+                </div>
+              </div>
+            `
+          )
+          .join('');
+      }
+
+      function getAllTemplates() {
+        return [...templateLibrary, ...appState.templateExtra];
+      }
+
+      function saveCurrentAsTemplate() {
+        const state = getState();
+        if (!state.observation || !state.request) {
+          refs.shareHint.textContent = '请至少填写观察和请求，再保存模板。';
+          return;
+        }
+        const custom = {
+          id: `custom_${Date.now()}`,
+          category: '我的模板',
+          title: `我的模板 ${new Date().toLocaleDateString('zh-CN')}`,
+          observation: state.observation,
+          feeling: mergeList(state.selectedFeelings, state.customFeeling),
+          need: mergeList(state.selectedNeeds, state.customNeed),
+          request: state.request
+        };
+        appState.templateExtra.unshift(custom);
+        appState.templateExtra = appState.templateExtra.slice(0, 80);
+        saveExtraTemplates();
+        renderTemplateLibrary();
+        refs.shareHint.textContent = '已保存为自定义模板。';
+      }
+
+      function isTemplateFavorite(templateId) {
+        return appState.templateFavorites.includes(templateId);
+      }
+
+      function toggleTemplateFavorite(templateId) {
+        if (!templateId) return;
+        if (isTemplateFavorite(templateId)) {
+          appState.templateFavorites = appState.templateFavorites.filter((item) => item !== templateId);
+        } else {
+          appState.templateFavorites.unshift(templateId);
+          appState.templateFavorites = [...new Set(appState.templateFavorites)].slice(0, 80);
+        }
+        saveTemplateFavorites();
+        renderTemplateLibrary();
+      }
+
+      function renderFavoriteTemplates() {
+        const all = getAllTemplates();
+        const favorites = all.filter((item) => isTemplateFavorite(item.id));
+        if (!favorites.length) {
+          refs.favoriteTemplates.innerHTML = '';
+          return;
+        }
+        refs.favoriteTemplates.innerHTML = favorites
+          .slice(0, 12)
+          .map((item) => `<button class="template-cat" data-template-id="${item.id}">★ ${escapeHtml(item.title)}</button>`)
+          .join('');
       }
 
       function normalizeRequestText(rawRequest) {
@@ -1181,6 +1810,8 @@
           appState.completionCounted = false;
         }
 
+        evaluateEscalationRisk();
+        scheduleRoomSync();
         scheduleDraftSave();
       }
 
@@ -1205,22 +1836,31 @@
       }
 
       function renderTemplateLibrary() {
-        const cats = ['全部', ...new Set(templateLibrary.map((item) => item.category))];
+        const all = getAllTemplates();
+        const cats = ['全部', ...new Set(all.map((item) => item.category))];
         refs.templateCategories.innerHTML = cats
           .map((cat) => `<button class="template-cat ${cat === appState.templateCategory ? 'active' : ''}" data-cat="${cat}">${cat}</button>`)
           .join('');
-
-        const visible = templateLibrary.filter((item) => appState.templateCategory === '全部' || item.category === appState.templateCategory);
+        const search = String(appState.templateSearch || '').trim();
+        const visible = all.filter((item) => {
+          if (appState.templateCategory !== '全部' && item.category !== appState.templateCategory) return false;
+          if (!search) return true;
+          return `${item.title} ${item.observation} ${item.request}`.includes(search);
+        });
         refs.templateCards.innerHTML = visible
           .map(
             (item) => `
               <button class="template-card" data-template-id="${item.id}">
-                <b>${item.title}</b>
-                <span>${item.category} · ${item.observation.slice(0, 22)}...</span>
+                <b>${escapeHtml(item.title)} ${isTemplateFavorite(item.id) ? '★' : ''}</b>
+                <span>${escapeHtml(item.category)} · ${escapeHtml(item.observation.slice(0, 22))}...</span>
+                <span class="tiny">请求：${escapeHtml(item.request.slice(0, 14))}...</span>
+                <span class="tiny">${isTemplateFavorite(item.id) ? '已收藏' : '点击右侧收藏'}</span>
               </button>
+              <button class="btn-plain mini" data-template-fav="${item.id}">${isTemplateFavorite(item.id) ? '取消收藏' : '收藏模板'}</button>
             `
           )
           .join('');
+        renderFavoriteTemplates();
       }
 
       refs.templateCategories.addEventListener('click', (event) => {
@@ -1231,9 +1871,14 @@
       });
 
       refs.templateCards.addEventListener('click', (event) => {
+        const favBtn = event.target.closest('[data-template-fav]');
+        if (favBtn) {
+          toggleTemplateFavorite(favBtn.dataset.templateFav);
+          return;
+        }
         const btn = event.target.closest('[data-template-id]');
         if (!btn) return;
-        const template = templateLibrary.find((item) => item.id === btn.dataset.templateId);
+        const template = getAllTemplates().find((item) => item.id === btn.dataset.templateId);
         if (!template) return;
         applyScenario(template);
         refs.shareHint.textContent = `已填充模板：${template.title}`;
@@ -1414,6 +2059,270 @@
         paintTimer();
       }
 
+      function formatDeescalateTimer(seconds) {
+        const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const s = String(seconds % 60).padStart(2, '0');
+        return `${m}:${s}`;
+      }
+
+      function stopDeescalatePause() {
+        clearInterval(appState.deescalate.timerId);
+        appState.deescalate.timerId = null;
+        appState.deescalate.remain = 90;
+        refs.deescalateTimer.textContent = formatDeescalateTimer(appState.deescalate.remain);
+      }
+
+      function startDeescalatePause() {
+        stopDeescalatePause();
+        refs.deescalateTimer.textContent = formatDeescalateTimer(appState.deescalate.remain);
+        appState.deescalate.timerId = setInterval(() => {
+          appState.deescalate.remain -= 1;
+          refs.deescalateTimer.textContent = formatDeescalateTimer(Math.max(0, appState.deescalate.remain));
+          if (appState.deescalate.remain <= 0) {
+            stopDeescalatePause();
+            refs.shareHint.textContent = '90 秒降温结束，可以继续沟通。';
+          }
+        }, 1000);
+      }
+
+      function evaluateEscalationRisk() {
+        const text = `${refs.observation.value} ${refs.request.value}`;
+        const hit = escalationWords.find((word) => text.includes(word));
+        if (!hit) {
+          refs.escalationPanel.classList.add('hidden');
+          return;
+        }
+        refs.escalationPanel.classList.remove('hidden');
+        refs.escalationHint.textContent = `检测到“${hit}”这类升级词，建议先降温再继续。`;
+      }
+
+      function getShareOptions() {
+        const oneTime = Boolean(refs.privacyOneTime.checked);
+        let maxViews = Number(refs.privacyMaxViews.value || 0);
+        if (!Number.isFinite(maxViews) || maxViews < 0) maxViews = 0;
+        if (maxViews > 20) maxViews = 20;
+        return {
+          oneTime,
+          maxViews,
+          pin: String(refs.privacyPin.value || '').trim()
+        };
+      }
+
+      function getSidFromCurrentShareUrl() {
+        const value = refs.shareUrl.value.trim();
+        if (!value) return '';
+        try {
+          const url = new URL(value);
+          return String(url.searchParams.get('sid') || '').trim();
+        } catch {
+          return '';
+        }
+      }
+
+      function getCurrentSid() {
+        const fromInput = getSidFromCurrentShareUrl();
+        if (fromInput) return fromInput;
+        return appState.restoredFromShortlink && appState.restoredFromShortlink.sid ? appState.restoredFromShortlink.sid : '';
+      }
+
+      function setRoomStatus(text) {
+        refs.roomStatusText.textContent = text;
+      }
+
+      function renderRoomPresence() {
+        if (!appState.collab.participants.length) {
+          refs.roomPresenceList.innerHTML = '';
+          return;
+        }
+        refs.roomPresenceList.innerHTML = appState.collab.participants
+          .map((item) => `<span class="presence-item">${escapeHtml(item.name || '匿名')}</span>`)
+          .join('');
+      }
+
+      function closeRoomSocket() {
+        if (appState.collab.syncTimer) {
+          clearTimeout(appState.collab.syncTimer);
+          appState.collab.syncTimer = null;
+        }
+        if (appState.collab.ws) {
+          try {
+            appState.collab.ws.close();
+          } catch {
+            // ignore close errors
+          }
+        }
+        appState.collab.ws = null;
+        appState.collab.roomId = '';
+        appState.collab.clientId = '';
+        appState.collab.participants = [];
+        renderRoomPresence();
+      }
+
+      function sendRoomStateNow() {
+        const ws = appState.collab.ws;
+        if (!ws || ws.readyState !== WebSocket.OPEN || !appState.collab.roomId) return;
+        ws.send(
+          JSON.stringify({
+            type: 'sync_state',
+            state: getState()
+          })
+        );
+      }
+
+      function scheduleRoomSync() {
+        if (appState.collab.suspendNextSync) {
+          appState.collab.suspendNextSync = false;
+          return;
+        }
+        const ws = appState.collab.ws;
+        if (!ws || ws.readyState !== WebSocket.OPEN || !appState.collab.roomId) return;
+        if (appState.collab.syncTimer) clearTimeout(appState.collab.syncTimer);
+        appState.collab.syncTimer = setTimeout(() => {
+          sendRoomStateNow();
+        }, 300);
+      }
+
+      function joinRoom() {
+        const roomId = refs.roomIdInput.value.trim().slice(0, 40);
+        if (!roomId) {
+          setRoomStatus('请先输入房间ID。');
+          return;
+        }
+        const name = refs.roomNameInput.value.trim().slice(0, 24) || '匿名';
+        closeRoomSocket();
+        const ws = new WebSocket(`${SHORTLINK_WS_BASE}/ws`);
+        appState.collab.ws = ws;
+        appState.collab.roomId = roomId;
+
+        ws.onopen = () => {
+          ws.send(
+            JSON.stringify({
+              type: 'join',
+              roomId,
+              name,
+              state: getState()
+            })
+          );
+          setRoomStatus(`已连接房间 ${roomId}，等待同步...`);
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const msg = JSON.parse(String(event.data || ''));
+            if (!msg || typeof msg !== 'object') return;
+            if (msg.type === 'joined') {
+              appState.collab.clientId = String(msg.clientId || '');
+              if (msg.state) {
+                appState.collab.suspendNextSync = true;
+                applyState(msg.state);
+                updateAll();
+              }
+              setRoomStatus(`已加入房间：${msg.roomId}`);
+              return;
+            }
+            if (msg.type === 'room_presence') {
+              appState.collab.participants = Array.isArray(msg.participants) ? msg.participants : [];
+              renderRoomPresence();
+              return;
+            }
+            if (msg.type === 'room_state') {
+              if (msg.by && msg.by === appState.collab.clientId) return;
+              if (msg.state) {
+                appState.collab.suspendNextSync = true;
+                applyState(msg.state);
+                updateAll();
+                setRoomStatus(`已接收来自房间成员的更新（${new Date().toLocaleTimeString('zh-CN')}）。`);
+              }
+              return;
+            }
+            if (msg.type === 'error') {
+              setRoomStatus(`协作错误：${msg.message || '未知错误'}`);
+            }
+          } catch {
+            setRoomStatus('收到无法解析的协作消息。');
+          }
+        };
+
+        ws.onclose = () => {
+          if (appState.collab.roomId) {
+            setRoomStatus('协作连接已断开。');
+          }
+          closeRoomSocket();
+        };
+
+        ws.onerror = () => {
+          setRoomStatus('协作连接失败，请稍后重试。');
+        };
+      }
+
+      function leaveRoom() {
+        const ws = appState.collab.ws;
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'leave' }));
+        }
+        closeRoomSocket();
+        setRoomStatus('已离开协作房间。');
+      }
+
+      function setupSpeechRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          refs.voiceObsBtn.disabled = true;
+          refs.voiceReqBtn.disabled = true;
+          refs.voiceStopBtn.disabled = true;
+          return;
+        }
+        const recog = new SpeechRecognition();
+        recog.lang = 'zh-CN';
+        recog.interimResults = true;
+        recog.continuous = false;
+
+        recog.onresult = (event) => {
+          const transcript = Array.from(event.results)
+            .map((res) => res[0] && res[0].transcript)
+            .filter(Boolean)
+            .join('');
+          if (!transcript || !appState.speech.target) return;
+          const targetEl = appState.speech.target === 'observation' ? refs.observation : refs.request;
+          targetEl.value = transcript.trim();
+          updateAll();
+        };
+        recog.onstart = () => {
+          appState.speech.listening = true;
+          refs.shareHint.textContent = '语音识别中，请开始说话...';
+        };
+        recog.onend = () => {
+          appState.speech.listening = false;
+        };
+        recog.onerror = () => {
+          refs.shareHint.textContent = '语音识别失败，请检查麦克风权限。';
+          appState.speech.listening = false;
+        };
+        appState.speech.recog = recog;
+      }
+
+      function startSpeechInput(target) {
+        if (!appState.speech.recog) {
+          refs.shareHint.textContent = '当前浏览器不支持语音输入。';
+          return;
+        }
+        appState.speech.target = target;
+        try {
+          appState.speech.recog.start();
+        } catch {
+          refs.shareHint.textContent = '语音识别启动失败，请稍后重试。';
+        }
+      }
+
+      function stopSpeechInput() {
+        if (!appState.speech.recog) return;
+        try {
+          appState.speech.recog.stop();
+        } catch {
+          // ignore
+        }
+      }
+
       function getDraftState() {
         return {
           form: getState(),
@@ -1423,6 +2332,16 @@
           echoInput: refs.echoInput.value,
           timer: remainSeconds,
           templateCategory: appState.templateCategory,
+          templateSearch: appState.templateSearch,
+          privacy: {
+            oneTime: refs.privacyOneTime.checked,
+            maxViews: refs.privacyMaxViews.value,
+            pin: refs.privacyPin.value
+          },
+          room: {
+            roomId: refs.roomIdInput.value,
+            roomName: refs.roomNameInput.value
+          },
           at: Date.now()
         };
       }
@@ -1457,6 +2376,15 @@
           paintTimer();
         }
         appState.templateCategory = rawDraft.templateCategory || '全部';
+        appState.templateSearch = rawDraft.templateSearch || '';
+        refs.templateSearch.value = appState.templateSearch;
+        const privacy = rawDraft.privacy || {};
+        refs.privacyOneTime.checked = Boolean(privacy.oneTime);
+        refs.privacyMaxViews.value = String(privacy.maxViews || '');
+        refs.privacyPin.value = String(privacy.pin || '');
+        const room = rawDraft.room || {};
+        refs.roomIdInput.value = room.roomId || '';
+        refs.roomNameInput.value = room.roomName || '';
         renderTemplateLibrary();
         refreshRoundUi();
         updateAll();
@@ -1533,6 +2461,11 @@
           draft: rawData.draft || null,
           metrics: normalizeMetrics(rawData.metrics),
           history: normalizeHistoryList(rawData.history),
+          todos: Array.isArray(rawData.todos) ? rawData.todos.slice(0, 200) : [],
+          customWords: rawData.customWords || { feelings: [], needs: [] },
+          favoriteCombos: Array.isArray(rawData.favoriteCombos) ? rawData.favoriteCombos.slice(0, 50) : [],
+          templateFavorites: Array.isArray(rawData.templateFavorites) ? rawData.templateFavorites.slice(0, 80) : [],
+          templateExtra: Array.isArray(rawData.templateExtra) ? rawData.templateExtra.slice(0, 80) : [],
           exportedAt: rawData.exportedAt || null
         };
       }
@@ -1544,7 +2477,12 @@
           exportedAt: new Date().toISOString(),
           draft: getDraftState(),
           metrics: normalizeMetrics(appState.metrics),
-          history: normalizeHistoryList(appState.history)
+          history: normalizeHistoryList(appState.history),
+          todos: appState.todos,
+          customWords: appState.customWords,
+          favoriteCombos: appState.favoriteCombos,
+          templateFavorites: appState.templateFavorites,
+          templateExtra: appState.templateExtra
         };
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -1553,6 +2491,38 @@
         a.download = `nvc-data-${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
+      }
+
+      function exportReviewReport() {
+        const done = appState.todos.filter((item) => item.done).length;
+        const open = Math.max(0, appState.todos.length - done);
+        const lines = [
+          '# NVC 对话复盘报告',
+          '',
+          `导出时间：${new Date().toLocaleString('zh-CN')}`,
+          '',
+          '## 指标概览',
+          `- 打开次数：${appState.metrics.sessions}`,
+          `- 四步完成：${appState.metrics.completed}`,
+          `- 分享次数：${appState.metrics.shares}`,
+          `- 回合成功：${appState.metrics.roundSuccess}`,
+          `- 待办进行中：${open}`,
+          `- 待办已完成：${done}`,
+          '',
+          '## 最近 10 条回合记录',
+          ...appState.history.slice(0, 10).map((item, idx) => `- ${idx + 1}. ${item.createdAt || ''}｜A:${item.aSentence || ''}｜B:${item.bSentence || ''}`),
+          '',
+          '## 待办清单',
+          ...appState.todos.slice(0, 20).map((item, idx) => `- ${idx + 1}. [${item.done ? 'x' : ' '}] ${item.text} ${item.dueDate ? `(截止 ${item.dueDate})` : ''}`)
+        ];
+        const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nvc-review-${Date.now()}.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+        refs.shareHint.textContent = '已导出复盘报告（Markdown）。';
       }
 
       async function importAllDataFromFile(file) {
@@ -1570,6 +2540,25 @@
         appState.history = imported.history;
         saveHistory();
         renderHistory();
+
+        appState.todos = Array.isArray(imported.todos) ? imported.todos : [];
+        saveTodos();
+        renderTodoList();
+
+        appState.customWords = imported.customWords && typeof imported.customWords === 'object' ? imported.customWords : { feelings: [], needs: [] };
+        saveCustomWords();
+        renderCustomWords();
+
+        appState.favoriteCombos = Array.isArray(imported.favoriteCombos) ? imported.favoriteCombos : [];
+        saveCombos();
+        renderComboList();
+
+        appState.templateFavorites = Array.isArray(imported.templateFavorites) ? imported.templateFavorites : [];
+        saveTemplateFavorites();
+
+        appState.templateExtra = Array.isArray(imported.templateExtra) ? imported.templateExtra : [];
+        saveExtraTemplates();
+        renderTemplateLibrary();
         return imported;
       }
 
@@ -1767,6 +2756,7 @@
         if (captchaToken) {
           payload.captchaToken = captchaToken;
         }
+        payload.options = getShareOptions();
         const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1788,6 +2778,7 @@
         if (sidKey) {
           url.hash = `k=${sidKey}`;
         }
+        appState.restoredFromShortlink = { sid: data.id, expiresAt: data.expiresAt || '' };
         resetCaptcha();
         updateExpiryHint(data.expiresAt);
         return {
@@ -1801,14 +2792,39 @@
         if (params.has('sid')) {
           const sid = params.get('sid');
           try {
-            const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks/${encodeURIComponent(sid)}`);
+            let pin = String(refs.privacyPin.value || '').trim();
+            const fetchByPin = async () => {
+              const url = `${SHORTLINK_API_BASE}/api/shortlinks/${encodeURIComponent(sid)}${pin ? `?pin=${encodeURIComponent(pin)}` : ''}`;
+              return fetch(url);
+            };
+            let resp = await fetchByPin();
+            if ((resp.status === 401 || resp.status === 403) && !pin) {
+              const inputPin = window.prompt('该短链需要 PIN 码，请输入：', '');
+              pin = String(inputPin || '').trim();
+              if (pin) {
+                refs.privacyPin.value = pin;
+                resp = await fetchByPin();
+              }
+            }
             if (resp.status === 404) {
               refs.shareHint.textContent = '短链不存在或已过期，请让对方重新生成。';
               updateExpiryHint('');
               return null;
             }
+            if (resp.status === 401) {
+              refs.shareHint.textContent = '该短链需要 PIN 才能查看。';
+              return null;
+            }
+            if (resp.status === 403) {
+              refs.shareHint.textContent = 'PIN 不正确，无法读取短链内容。';
+              return null;
+            }
             if (resp.ok) {
               const data = await resp.json();
+              if (data.privacy) {
+                refs.privacyOneTime.checked = Boolean(data.privacy.oneTime);
+                refs.privacyMaxViews.value = data.privacy.maxViews ? String(data.privacy.maxViews) : '';
+              }
               if (data && data.sealed) {
                 const sidKey = getSidKeyFromHash();
                 if (!sidKey) {
@@ -1915,6 +2931,76 @@
         }
       }
 
+      async function renewCurrentShortLink() {
+        const sid = getCurrentSid();
+        if (!sid) {
+          refs.shareHint.textContent = '当前没有可续期的短链。';
+          return;
+        }
+        const days = Math.max(1, Math.min(180, Number(refs.renewDays.value || 30)));
+        const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks/${encodeURIComponent(sid)}/renew`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            days,
+            pin: String(refs.privacyPin.value || '').trim()
+          })
+        });
+        if (resp.status === 403) {
+          refs.shareHint.textContent = '续期失败：PIN 不正确。';
+          return;
+        }
+        if (!resp.ok) {
+          refs.shareHint.textContent = `续期失败（${resp.status}）。`;
+          return;
+        }
+        const data = await resp.json();
+        updateExpiryHint(data.expiresAt || '');
+        if (appState.restoredFromShortlink) {
+          appState.restoredFromShortlink.expiresAt = data.expiresAt || '';
+        }
+        refs.shareHint.textContent = `短链已续期 ${days} 天。`;
+      }
+
+      async function cloneCurrentShortLink() {
+        const sid = getCurrentSid();
+        if (!sid) {
+          refs.shareHint.textContent = '当前没有可克隆的短链。';
+          return;
+        }
+        const payload = {
+          pin: String(refs.privacyPin.value || '').trim(),
+          options: getShareOptions()
+        };
+        if (appState.captcha.enabled) {
+          payload.captchaToken = getCaptchaTokenOrThrow();
+        }
+        const resp = await fetch(`${SHORTLINK_API_BASE}/api/shortlinks/${encodeURIComponent(sid)}/clone`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (resp.status === 403) {
+          refs.shareHint.textContent = '克隆失败：PIN 或验证码无效。';
+          return;
+        }
+        if (!resp.ok) {
+          refs.shareHint.textContent = `克隆失败（${resp.status}）。`;
+          return;
+        }
+        const data = await resp.json();
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = '';
+        url.searchParams.set('sid', data.id);
+        refs.shareUrl.value = url.toString();
+        appState.restoredFromShortlink = { sid: data.id, expiresAt: data.expiresAt || '' };
+        updateExpiryHint(data.expiresAt || '');
+        resetCaptcha();
+        refs.shareHint.textContent = '已克隆为新短链并更新分享地址。';
+        bumpMetric('shares');
+      }
+
       async function nativeShare() {
         const url = await buildShortShareLink();
         if (!navigator.share) return;
@@ -1965,6 +3051,22 @@
           await navigator.serviceWorker.register('/sw.js');
         } catch {
           refs.shareHint.textContent = '离线缓存初始化失败，不影响正常使用。';
+        }
+      }
+
+      async function checkBackendHealth() {
+        try {
+          const resp = await fetch(`${SHORTLINK_API_BASE}/healthz`);
+          if (!resp.ok) {
+            refs.shareHint.textContent = `健康检查失败（${resp.status}）。`;
+            return;
+          }
+          const data = await resp.json();
+          appState.health.store = data.store || '-';
+          renderMetrics();
+          refs.shareHint.textContent = `服务正常：store=${data.store || '-'}，ws房间=${Number(data.wsRooms || 0)}。`;
+        } catch {
+          refs.shareHint.textContent = '健康检查失败：无法连接后端。';
         }
       }
 
@@ -2065,14 +3167,72 @@
         refs.clearBtn.addEventListener('click', clearForm);
         refs.restoreDraftBtn.addEventListener('click', restoreDraft);
         refs.copyBtn.addEventListener('click', copySentence);
+        refs.voiceObsBtn.addEventListener('click', () => startSpeechInput('observation'));
+        refs.voiceReqBtn.addEventListener('click', () => startSpeechInput('request'));
+        refs.voiceStopBtn.addEventListener('click', stopSpeechInput);
         refs.copyRestoreBtn.addEventListener('click', copyRestoreDraftLink);
         refs.shareLinkBtn.addEventListener('click', buildShareLink);
         refs.shortLinkBtn.addEventListener('click', buildShortShareLink);
+        refs.renewLinkBtn.addEventListener('click', renewCurrentShortLink);
+        refs.cloneLinkBtn.addEventListener('click', async () => {
+          try {
+            await cloneCurrentShortLink();
+          } catch (error) {
+            const msg = String(error && error.message || '');
+            refs.shareHint.textContent = msg.includes('captcha') ? '请先完成验证码，再克隆短链。' : '克隆短链失败。';
+          }
+        });
         refs.nativeShareBtn.addEventListener('click', nativeShare);
         refs.randomScenarioBtn.addEventListener('click', randomScenario);
         refs.exportImageBtn.addEventListener('click', exportAsImage);
+        refs.exportReportBtn.addEventListener('click', exportReviewReport);
         refs.exportDataBtn.addEventListener('click', exportAllData);
         refs.importDataBtn.addEventListener('click', () => refs.importDataInput.click());
+        refs.addFeelingWordBtn.addEventListener('click', () => {
+          const ok = pushCustomWord('feelings', refs.customFeeling.value);
+          refs.shareHint.textContent = ok ? '已加入自定义感受词。' : '请输入新的感受词后再加入。';
+        });
+        refs.addNeedWordBtn.addEventListener('click', () => {
+          const ok = pushCustomWord('needs', refs.customNeed.value);
+          refs.shareHint.textContent = ok ? '已加入自定义需要词。' : '请输入新的需要词后再加入。';
+        });
+        refs.customFeelingWords.addEventListener('click', (event) => {
+          const node = event.target.closest('[data-custom-word]');
+          if (!node) return;
+          const raw = node.dataset.customWord || '';
+          if (!raw.startsWith('feel:')) return;
+          appendWordToInput(refs.customFeeling, raw.slice(5));
+        });
+        refs.customNeedWords.addEventListener('click', (event) => {
+          const node = event.target.closest('[data-custom-word]');
+          if (!node) return;
+          const raw = node.dataset.customWord || '';
+          if (!raw.startsWith('need:')) return;
+          appendWordToInput(refs.customNeed, raw.slice(5));
+        });
+        refs.templateSearch.addEventListener('input', () => {
+          appState.templateSearch = refs.templateSearch.value.trim();
+          renderTemplateLibrary();
+          scheduleDraftSave();
+        });
+        refs.saveTemplateBtn.addEventListener('click', saveCurrentAsTemplate);
+        refs.favoriteTemplates.addEventListener('click', (event) => {
+          const btn = event.target.closest('[data-template-id]');
+          if (!btn) return;
+          const template = getAllTemplates().find((item) => item.id === btn.dataset.templateId);
+          if (!template) return;
+          applyScenario(template);
+          refs.shareHint.textContent = `已填充收藏模板：${template.title}`;
+        });
+        [refs.privacyOneTime, refs.privacyMaxViews, refs.privacyPin, refs.renewDays, refs.roomIdInput, refs.roomNameInput].forEach((el) => {
+          el.addEventListener('input', scheduleDraftSave);
+        });
+        refs.roomJoinBtn.addEventListener('click', joinRoom);
+        refs.roomLeaveBtn.addEventListener('click', leaveRoom);
+        refs.roomSyncBtn.addEventListener('click', () => {
+          sendRoomStateNow();
+          refs.shareHint.textContent = '已手动同步当前状态到房间。';
+        });
         refs.importDataInput.addEventListener('change', async (event) => {
           const file = event.target.files && event.target.files[0];
           if (!file) return;
@@ -2087,14 +3247,64 @@
           }
         });
         refs.installBtn.addEventListener('click', installApp);
+        refs.checkHealthBtn.addEventListener('click', checkBackendHealth);
         refs.clearHistoryBtn.addEventListener('click', () => {
           if (!appState.history.length) return;
           if (!window.confirm('确定清空历史记录吗？')) return;
           appState.history = [];
           saveHistory();
           renderHistory();
+          renderMetrics();
           refs.shareHint.textContent = '历史记录已清空。';
         });
+        refs.todoFromRequestBtn.addEventListener('click', addTodoFromCurrentRequest);
+        refs.todoAddBtn.addEventListener('click', () => {
+          const ok = addTodo(refs.todoTextInput.value, refs.todoDateInput.value);
+          if (!ok) {
+            refs.shareHint.textContent = '请输入待办内容。';
+            return;
+          }
+          refs.todoTextInput.value = '';
+          refs.shareHint.textContent = '已新增待办。';
+        });
+        refs.todoList.addEventListener('click', (event) => {
+          const toggle = event.target.closest('[data-todo-toggle]');
+          if (toggle) {
+            const id = toggle.dataset.todoToggle;
+            const hit = appState.todos.find((item) => item.id === id);
+            if (!hit) return;
+            hit.done = !hit.done;
+            saveTodos();
+            renderTodoList();
+            return;
+          }
+          const remove = event.target.closest('[data-todo-remove]');
+          if (remove) {
+            appState.todos = appState.todos.filter((item) => item.id !== remove.dataset.todoRemove);
+            saveTodos();
+            renderTodoList();
+          }
+        });
+        refs.saveComboBtn.addEventListener('click', saveCurrentCombo);
+        refs.comboList.addEventListener('click', (event) => {
+          const applyBtn = event.target.closest('[data-combo-apply]');
+          if (applyBtn) {
+            const item = appState.favoriteCombos.find((combo) => combo.id === applyBtn.dataset.comboApply);
+            if (!item) return;
+            setSelectedChips('feelingChips', item.feelings || []);
+            setSelectedChips('needChips', item.needs || []);
+            updateAll();
+            refs.shareHint.textContent = '已套用收藏组合。';
+            return;
+          }
+          const removeBtn = event.target.closest('[data-combo-remove]');
+          if (removeBtn) {
+            appState.favoriteCombos = appState.favoriteCombos.filter((combo) => combo.id !== removeBtn.dataset.comboRemove);
+            saveCombos();
+            renderComboList();
+          }
+        });
+        refs.deescalateBtn.addEventListener('click', startDeescalatePause);
 
         refs.roundStartBtn.addEventListener('click', startRound);
         refs.roundLockBtn.addEventListener('click', lockRound);
@@ -2105,15 +3315,25 @@
         refs.startTimerBtn.addEventListener('click', startTimer);
         refs.pauseTimerBtn.addEventListener('click', pauseTimer);
         refs.resetTimerBtn.addEventListener('click', resetTimer);
+
+        window.addEventListener('beforeunload', () => {
+          leaveRoom();
+          stopSpeechInput();
+          stopDeescalatePause();
+        });
       }
 
       async function init() {
         renderChips('feelingChips', feelings);
         renderChips('needChips', needs);
         renderTemplateLibrary();
+        renderCustomWords();
+        renderComboList();
+        renderTodoList();
         attachEvents();
         setupInstallPrompt();
         setupCaptcha();
+        setupSpeechRecognition();
         renderHistory();
         updateExpiryHint('');
         await registerServiceWorker();
@@ -2135,6 +3355,7 @@
         refreshRoundUi();
         updateAll();
         paintTimer();
+        checkBackendHealth();
       }
 
       init();

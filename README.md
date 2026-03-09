@@ -4,8 +4,11 @@
 - 四步表达（观察-感受-需要-请求）
 - A/B 回合模式与复述确认
 - 后端短链分享（默认端到端加密 + 过期时间）
+- 短链隐私控制（PIN、一次性、最大访问次数）+ 续期/克隆
 - 人机验证（Turnstile，可选）
+- 实时协作房间（WebSocket 同步）
 - 历史时间轴
+- 请求待办跟进 + 周/月复盘看板
 - JSON 导入/导出（含 schema 版本迁移）
 - PWA 安装与离线缓存
 
@@ -60,6 +63,7 @@ npm run start:prod
 - `RATE_LIMIT_WRITE_MAX`: 写接口窗口内最大请求，默认 `40`
 - `RATE_LIMIT_READ_MAX`: 读接口窗口内最大请求，默认 `160`
 - `TURNSTILE_SECRET_KEY`: Turnstile Secret Key（可选，设置后启用验证）
+- `SHORTLINK_PIN_SECRET`: 短链 PIN 哈希盐（建议设置为随机长串）
 - `SENTRY_DSN`: 可选，配置后启用后端异常上报
 - `SENTRY_ENV`: 可选，Sentry 环境名
 
@@ -76,6 +80,9 @@ npm run start:prod
 
 - 健康检查：`GET /healthz`
 - 指标端点：`GET /metrics`
+- 协作通道：`WS /ws`
+- 短链续期：`POST /api/shortlinks/:id/renew`
+- 短链克隆：`POST /api/shortlinks/:id/clone`
 - 已接入 Sentry SDK（配置 `SENTRY_DSN` 后生效）
 
 建议告警：

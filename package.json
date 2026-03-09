@@ -9,15 +9,17 @@
     "migrate:down": "node-pg-migrate down --migrations-dir migrations",
     "start": "node server.js",
     "start:prod": "npm run migrate:up && node server.js",
-    "test:e2e": "playwright test"
+    "test:e2e": "start-server-and-test \"SHORTLINK_STORAGE=file node server.js\" http://127.0.0.1:10000 \"playwright test\""
   },
   "dependencies": {
     "@sentry/node": "^10.6.0",
     "express": "^4.21.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
-    "node-pg-migrate": "^8.0.3"
+    "node-pg-migrate": "^8.0.3",
+    "start-server-and-test": "^2.1.3"
   }
 }

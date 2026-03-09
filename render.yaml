@@ -29,6 +29,8 @@ services:
         value: https://nvc-couple-share.onrender.com
       - key: TURNSTILE_SECRET_KEY
         sync: false
+      - key: SHORTLINK_PIN_SECRET
+        sync: false
       - key: SENTRY_DSN
         sync: false
       - key: DATABASE_URL

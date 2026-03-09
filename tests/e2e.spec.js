@@ -135,3 +135,92 @@ test('短链 API 支持加密载荷格式', async ({ request }) => {
   expect(loaded.sealed).toBeTruthy();
   expect(loaded.sealed.alg).toBe('AES-GCM');
 });
+
+test('短链 API 支持 PIN 与一次性访问', async ({ request }) => {
+  const createResp = await request.post('/api/shortlinks', {
+    data: {
+      state: {
+        observation: 'PIN 一次性测试',
+        request: '你愿意先说到家了吗？',
+        selectedFeelings: ['焦虑'],
+        selectedNeeds: ['连接']
+      },
+      options: {
+        pin: '1234',
+        oneTime: true
+      }
+    }
+  });
+  expect(createResp.status()).toBe(201);
+  const created = await createResp.json();
+  expect(created.privacy.requiresPin).toBeTruthy();
+  expect(created.privacy.maxViews).toBe(1);
+
+  const noPinResp = await request.get(`/api/shortlinks/${created.id}`);
+  expect(noPinResp.status()).toBe(401);
+
+  const badPinResp = await request.get(`/api/shortlinks/${created.id}?pin=9999`);
+  expect(badPinResp.status()).toBe(403);
+
+  const firstReadResp = await request.get(`/api/shortlinks/${created.id}?pin=1234`);
+  expect(firstReadResp.status()).toBe(200);
+
+  const secondReadResp = await request.get(`/api/shortlinks/${created.id}?pin=1234`);
+  expect(secondReadResp.status()).toBe(404);
+});
+
+test('短链 API 支持续期与克隆', async ({ request }) => {
+  const createResp = await request.post('/api/shortlinks', {
+    data: {
+      state: {
+        observation: '续期克隆测试',
+        request: '你愿意晚上先发一条消息吗？',
+        selectedFeelings: ['紧张'],
+        selectedNeeds: ['稳定']
+      },
+      options: {
+        pin: '2026'
+      }
+    }
+  });
+  expect(createResp.status()).toBe(201);
+  const created = await createResp.json();
+
+  const renewDenied = await request.post(`/api/shortlinks/${created.id}/renew`, {
+    data: { days: 60, pin: '0000' }
+  });
+  expect(renewDenied.status()).toBe(403);
+
+  const renewResp = await request.post(`/api/shortlinks/${created.id}/renew`, {
+    data: { days: 60, pin: '2026' }
+  });
+  expect(renewResp.status()).toBe(200);
+  const renewed = await renewResp.json();
+  expect(new Date(renewed.expiresAt).getTime()).toBeGreaterThan(new Date(created.expiresAt).getTime());
+
+  const cloneResp = await request.post(`/api/shortlinks/${created.id}/clone`, {
+    data: {
+      pin: '2026',
+      options: {
+        maxViews: 2
+      }
+    }
+  });
+  expect(cloneResp.status()).toBe(201);
+  const cloned = await cloneResp.json();
+  expect(cloned.id).toBeTruthy();
+  expect(cloned.id).not.toBe(created.id);
+
+  const clonedRead = await request.get(`/api/shortlinks/${cloned.id}`);
+  expect(clonedRead.status()).toBe(200);
+  const clonedData = await clonedRead.json();
+  expect(clonedData.state.observation).toBe('续期克隆测试');
+});
+
+test('新控件可见：协作/待办/隐私分享', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#roomJoinBtn')).toBeVisible();
+  await expect(page.locator('#todoAddBtn')).toBeVisible();
+  await expect(page.locator('#privacyPin')).toBeVisible();
+  await expect(page.locator('#exportReportBtn')).toBeVisible();
+});

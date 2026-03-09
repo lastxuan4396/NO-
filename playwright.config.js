@@ -15,11 +15,5 @@ module.exports = defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
     }
-  ],
-  webServer: {
-    command: 'npm start',
-    port: 10000,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000
-  }
+  ]
 });
