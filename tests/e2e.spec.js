@@ -42,6 +42,8 @@ test('回合模式可记录历史时间轴', async ({ page }) => {
 
   await expect(page.locator('#historyList .history-item').first()).toBeVisible();
   await expect(page.locator('#historyList')).toContainText('第 1 轮');
+  await expect(page.locator('#repairList .repair-item').first()).toBeVisible();
+  await expect(page.locator('#repairList')).toContainText('来源回合：第 1 轮');
 });
 
 test('导出/导入 JSON 含 schemaVersion', async ({ page }) => {
@@ -72,6 +74,7 @@ test('导出/导入 JSON 含 schemaVersion', async ({ page }) => {
         request: '你愿意今晚先发一句到家了吗？',
         customFeeling: '',
         customNeed: '',
+        emotionIntensity: 6,
         selectedFeelings: [],
         selectedNeeds: []
       },
@@ -223,4 +226,19 @@ test('新控件可见：协作/待办/隐私分享', async ({ page }) => {
   await expect(page.locator('#todoAddBtn')).toBeVisible();
   await expect(page.locator('#privacyPin')).toBeVisible();
   await expect(page.locator('#exportReportBtn')).toBeVisible();
+  await expect(page.locator('#emotionIntensity')).toBeVisible();
+  await expect(page.locator('#reqExecScore')).toBeVisible();
+  await expect(page.locator('#repairAddBtn')).toBeVisible();
+});
+
+test('请求可执行评分和情绪强度标尺可联动', async ({ page }) => {
+  await page.goto('/');
+
+  await page.fill('#request', '你愿意今天晚上九点前回复我吗？');
+  await expect(page.locator('#reqExecScore')).toContainText('分');
+  await expect(page.locator('#reqExecHint')).toContainText('可执行度');
+
+  await page.fill('#emotionIntensity', '9');
+  await expect(page.locator('#emotionIntensityValue')).toContainText('9 / 10');
+  await expect(page.locator('#emotionIntensityHint')).toContainText('强度较高');
 });

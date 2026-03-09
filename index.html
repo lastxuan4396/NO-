@@ -500,6 +500,123 @@
         color: #991b1b;
       }
 
+      .intensity-board {
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 12px;
+        background: #ecfdf5;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .range-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .range-row input[type="range"] {
+        flex: 1;
+      }
+
+      .range-pill {
+        min-width: 86px;
+        text-align: center;
+        border-radius: 999px;
+        background: #d1fae5;
+        color: #065f46;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 4px 8px;
+      }
+
+      .request-score {
+        border: 1px solid rgba(37, 99, 235, 0.25);
+        border-radius: 12px;
+        background: #eff6ff;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .score-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .score-num {
+        font-size: 18px;
+        color: #1d4ed8;
+        font-weight: 800;
+      }
+
+      .score-bar {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #dbeafe;
+        overflow: hidden;
+      }
+
+      .score-fill {
+        height: 100%;
+        width: 0;
+        background: linear-gradient(90deg, #60a5fa, #2563eb);
+        transition: width 220ms ease;
+      }
+
+      .score-breakdown {
+        font-size: 12px;
+        color: #334155;
+        line-height: 1.5;
+      }
+
+      .repair-panel {
+        border: 1px solid rgba(20, 83, 45, 0.2);
+        border-radius: 12px;
+        background: #f0fdf4;
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .repair-list {
+        display: grid;
+        gap: 8px;
+        max-height: 240px;
+        overflow: auto;
+      }
+
+      .repair-item {
+        border: 1px solid rgba(148, 163, 184, 0.35);
+        border-radius: 10px;
+        background: #fff;
+        padding: 8px;
+        display: grid;
+        gap: 6px;
+      }
+
+      .repair-item.done {
+        opacity: 0.68;
+      }
+
+      .repair-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .repair-head b {
+        font-size: 13px;
+      }
+
+      .repair-meta {
+        font-size: 11px;
+        color: #64748b;
+      }
+
       .data-row {
         display: grid;
         gap: 9px;
@@ -817,6 +934,26 @@
             </div>
           </div>
 
+          <div class="intensity-board">
+            <h3 class="result-title" style="margin: 0;">情绪强度标尺</h3>
+            <p class="tiny">给自己当前情绪一个 1-10 分强度，帮助你把表达放在可承受区间。</p>
+            <div class="range-row">
+              <input id="emotionIntensity" type="range" min="1" max="10" value="5" />
+              <span id="emotionIntensityValue" class="range-pill">5 / 10</span>
+            </div>
+            <p id="emotionIntensityHint" class="tiny">5-6 分适合直接沟通；8 分以上建议先降温。</p>
+          </div>
+
+          <div class="request-score">
+            <div class="score-top">
+              <h3 class="result-title" style="margin: 0;">请求可执行度评分</h3>
+              <span id="reqExecScore" class="score-num">--</span>
+            </div>
+            <div class="score-bar"><div id="reqExecFill" class="score-fill"></div></div>
+            <p id="reqExecHint" class="tiny">填写请求后会自动评分。</p>
+            <p id="reqExecBreakdown" class="score-breakdown"></p>
+          </div>
+
           <div class="divider"></div>
 
           <div class="template-board">
@@ -931,6 +1068,8 @@
               <div class="metric"><b id="mRounds">0</b><span>近30天回合</span></div>
               <div class="metric"><b id="todoOpen">0</b><span>待跟进请求</span></div>
               <div class="metric"><b id="todoDone">0</b><span>已完成请求</span></div>
+              <div class="metric"><b id="repairOpen">0</b><span>修复行动待做</span></div>
+              <div class="metric"><b id="repairDone">0</b><span>修复行动完成</span></div>
               <div class="metric"><b id="agreeRate">0%</b><span>复述通过率</span></div>
               <div class="metric"><b id="healthStore">-</b><span>后端存储</span></div>
             </div>
@@ -964,6 +1103,27 @@
               <button class="btn-plain mini" id="todoAddBtn">新增待办</button>
             </div>
             <div id="todoList" class="todo-list"></div>
+          </div>
+
+          <div class="repair-panel">
+            <h3 class="result-title" style="margin: 0;">回合后修复行动追踪</h3>
+            <p class="tiny">记录“谁在何时做什么修复动作”，用于关系修复闭环。</p>
+            <div class="collab-row">
+              <input id="repairActionInput" placeholder="修复行动（例：今晚20:30先做5分钟复盘）" />
+              <select id="repairOwnerSelect">
+                <option value="A">执行人：A</option>
+                <option value="B">执行人：B</option>
+                <option value="双方">执行人：双方</option>
+              </select>
+            </div>
+            <div class="collab-row">
+              <input id="repairDueDateInput" type="date" />
+              <button class="btn-main mini" id="repairAddBtn">新增修复行动</button>
+            </div>
+            <div class="timer-actions">
+              <button class="btn-plain mini" id="repairFromRoundBtn">从本轮请求生成修复行动</button>
+            </div>
+            <div id="repairList" class="repair-list"></div>
           </div>
 
           <section class="timer">
@@ -1078,6 +1238,7 @@
       const METRICS_KEY = 'nvc-couple-metrics-v1';
       const HISTORY_KEY = 'nvc-couple-history-v1';
       const TODO_KEY = 'nvc-couple-todo-v1';
+      const REPAIR_KEY = 'nvc-couple-repair-v1';
       const CUSTOM_WORDS_KEY = 'nvc-couple-custom-words-v1';
       const COMBO_KEY = 'nvc-couple-combo-v1';
       const TEMPLATE_FAVORITES_KEY = 'nvc-couple-template-favorites-v1';
@@ -1106,6 +1267,9 @@
         request: document.getElementById('request'),
         customFeeling: document.getElementById('customFeeling'),
         customNeed: document.getElementById('customNeed'),
+        emotionIntensity: document.getElementById('emotionIntensity'),
+        emotionIntensityValue: document.getElementById('emotionIntensityValue'),
+        emotionIntensityHint: document.getElementById('emotionIntensityHint'),
         resultText: document.getElementById('resultText'),
         resultTiny: document.getElementById('resultTiny'),
         echoText: document.getElementById('echoText'),
@@ -1113,6 +1277,10 @@
         obvHint: document.getElementById('obvHint'),
         reqBadge: document.getElementById('reqBadge'),
         reqHint: document.getElementById('reqHint'),
+        reqExecScore: document.getElementById('reqExecScore'),
+        reqExecFill: document.getElementById('reqExecFill'),
+        reqExecHint: document.getElementById('reqExecHint'),
+        reqExecBreakdown: document.getElementById('reqExecBreakdown'),
         shareUrl: document.getElementById('shareUrl'),
         shareHint: document.getElementById('shareHint'),
         autosaveStatus: document.getElementById('autosaveStatus'),
@@ -1185,6 +1353,12 @@
         todoFromRequestBtn: document.getElementById('todoFromRequestBtn'),
         todoAddBtn: document.getElementById('todoAddBtn'),
         todoList: document.getElementById('todoList'),
+        repairActionInput: document.getElementById('repairActionInput'),
+        repairOwnerSelect: document.getElementById('repairOwnerSelect'),
+        repairDueDateInput: document.getElementById('repairDueDateInput'),
+        repairAddBtn: document.getElementById('repairAddBtn'),
+        repairFromRoundBtn: document.getElementById('repairFromRoundBtn'),
+        repairList: document.getElementById('repairList'),
         saveComboBtn: document.getElementById('saveComboBtn'),
         comboList: document.getElementById('comboList'),
         checkHealthBtn: document.getElementById('checkHealthBtn'),
@@ -1198,6 +1372,8 @@
         mRounds: document.getElementById('mRounds'),
         todoOpen: document.getElementById('todoOpen'),
         todoDone: document.getElementById('todoDone'),
+        repairOpen: document.getElementById('repairOpen'),
+        repairDone: document.getElementById('repairDone'),
         agreeRate: document.getElementById('agreeRate'),
         healthStore: document.getElementById('healthStore')
       };
@@ -1224,6 +1400,7 @@
         },
         metrics: loadMetrics(),
         todos: loadTodos(),
+        repairs: loadRepairs(),
         customWords: loadCustomWords(),
         favoriteCombos: loadCombos(),
         templateFavorites: loadTemplateFavorites(),
@@ -1247,6 +1424,13 @@
         },
         health: {
           store: '-'
+        },
+        emotionIntensity: 5,
+        requestScore: {
+          score: 0,
+          level: '未评分',
+          hint: '填写请求后会自动评分。',
+          breakdown: []
         }
       };
 
@@ -1276,6 +1460,32 @@
 
       function saveTodos() {
         localStorage.setItem(TODO_KEY, JSON.stringify(appState.todos.slice(0, 200)));
+      }
+
+      function loadRepairs() {
+        try {
+          const raw = localStorage.getItem(REPAIR_KEY);
+          const parsed = raw ? JSON.parse(raw) : [];
+          if (!Array.isArray(parsed)) return [];
+          return parsed
+            .slice(0, 200)
+            .map((item) => ({
+              id: String(item.id || `${Date.now()}-${Math.random()}`),
+              action: String(item.action || '').slice(0, 240),
+              owner: String(item.owner || '双方').slice(0, 12),
+              dueDate: String(item.dueDate || ''),
+              done: Boolean(item.done),
+              roundNo: Number(item.roundNo || 0),
+              createdAt: String(item.createdAt || new Date().toISOString())
+            }))
+            .filter((item) => item.action);
+        } catch {
+          return [];
+        }
+      }
+
+      function saveRepairs() {
+        localStorage.setItem(REPAIR_KEY, JSON.stringify(appState.repairs.slice(0, 200)));
       }
 
       function loadCustomWords() {
@@ -1402,6 +1612,10 @@
         const open = Math.max(0, appState.todos.length - done);
         refs.todoOpen.textContent = String(open);
         refs.todoDone.textContent = String(done);
+        const repairDone = appState.repairs.filter((item) => item.done).length;
+        const repairOpen = Math.max(0, appState.repairs.length - repairDone);
+        refs.repairOpen.textContent = String(repairOpen);
+        refs.repairDone.textContent = String(repairDone);
         const agreeRate = m.sessions ? Math.min(100, Math.round((m.roundSuccess / m.sessions) * 100)) : 0;
         refs.agreeRate.textContent = `${agreeRate}%`;
         refs.healthStore.textContent = appState.health.store || '-';
@@ -1513,6 +1727,63 @@
         if (!ok) return;
         refs.todoTextInput.value = '';
         refs.shareHint.textContent = '已加入请求待办。';
+      }
+
+      function renderRepairList() {
+        if (!appState.repairs.length) {
+          refs.repairList.innerHTML = '<p class="tiny">暂无修复行动，建议每轮结束至少约定 1 条具体修复动作。</p>';
+          renderMetrics();
+          return;
+        }
+        refs.repairList.innerHTML = appState.repairs
+          .map((item) => {
+            const due = item.dueDate ? `截止：${item.dueDate}` : '无截止日期';
+            const round = item.roundNo > 0 ? `来源回合：第 ${item.roundNo} 轮` : '手动添加';
+            return `
+              <article class="repair-item ${item.done ? 'done' : ''}">
+                <div class="repair-head">
+                  <b>${escapeHtml(item.action)}</b>
+                  <label class="tiny"><input type="checkbox" data-repair-toggle="${item.id}" ${item.done ? 'checked' : ''}/>完成</label>
+                </div>
+                <div class="repair-meta">${escapeHtml(round)} ｜ 执行人：${escapeHtml(item.owner)} ｜ ${escapeHtml(due)}</div>
+                <button class="btn-plain mini" data-repair-remove="${item.id}">删除</button>
+              </article>
+            `;
+          })
+          .join('');
+        renderMetrics();
+      }
+
+      function addRepairAction(action, owner = '双方', dueDate = '', roundNo = 0) {
+        const cleanAction = String(action || '').trim().slice(0, 240);
+        if (!cleanAction) return false;
+        const cleanOwner = String(owner || '双方').trim().slice(0, 12) || '双方';
+        appState.repairs.unshift({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          action: cleanAction,
+          owner: cleanOwner,
+          dueDate: String(dueDate || ''),
+          done: false,
+          roundNo: Number(roundNo || 0),
+          createdAt: new Date().toISOString()
+        });
+        appState.repairs = appState.repairs.slice(0, 200);
+        saveRepairs();
+        renderRepairList();
+        return true;
+      }
+
+      function addRepairFromRound() {
+        const requestText = normalizeRequestText(refs.request.value);
+        const owner = refs.repairOwnerSelect.value || '双方';
+        const dueDate = refs.repairDueDateInput.value;
+        const ok = addRepairAction(requestText, owner, dueDate);
+        if (!ok) {
+          refs.shareHint.textContent = '当前没有可生成的请求内容。';
+          return;
+        }
+        refs.repairActionInput.value = '';
+        refs.shareHint.textContent = '已从当前请求生成修复行动。';
       }
 
       function renderChips(containerId, values) {
@@ -1724,6 +1995,78 @@
         return { status: 'warn', label: '可更具体', hint: '加上时间和动作：例如“今晚 9 点前回我消息”。' };
       }
 
+      function scoreRequestExecutability(rawText) {
+        const text = String(rawText || '').trim();
+        if (!text) {
+          return {
+            score: 0,
+            level: '未评分',
+            hint: '先写出一个完整请求，再评估可执行度。',
+            breakdown: []
+          };
+        }
+        const hasTime = /今天|明天|今晚|本周|下周|每周|周末|点|分钟|小时|之前|以后|截止/.test(text);
+        const hasAction = /发|说|做|回|确认|安排|记录|提前|一起|完成|提醒|暂停/.test(text);
+        const hasConsent = /你愿意|可以吗|能否|可不可以|是否愿意/.test(text);
+        const isConcreteLength = text.length >= 12 && text.length <= 80;
+        const notAbsolute = !/必须|立刻|马上|你得|不能再|否则/.test(text);
+
+        let score = 30;
+        if (hasTime) score += 20;
+        if (hasAction) score += 20;
+        if (hasConsent) score += 15;
+        if (isConcreteLength) score += 10;
+        if (notAbsolute) score += 5;
+        score = Math.max(0, Math.min(100, score));
+
+        let level = '可执行度一般';
+        let hint = '建议补充时间边界和更明确动作。';
+        if (score >= 85) {
+          level = '可执行度优秀';
+          hint = '请求明确且可协商，适合直接进入行动。';
+        } else if (score >= 65) {
+          level = '可执行度良好';
+          hint = '已经不错，可再补一个验收标准会更稳。';
+        } else if (score >= 45) {
+          level = '可执行度一般';
+          hint = '建议补充时间、动作、可协商措辞。';
+        } else {
+          level = '可执行度偏低';
+          hint = '当前更像情绪表达，建议改成“你愿意在何时做何事吗”。';
+        }
+
+        const breakdown = [
+          `时间边界：${hasTime ? '有' : '缺失'}`,
+          `动作清晰：${hasAction ? '有' : '缺失'}`,
+          `协商语气：${hasConsent ? '有' : '可补“你愿意…吗”'}`,
+          `长度适中：${isConcreteLength ? '是' : '建议 12-80 字'}`,
+          `避免命令：${notAbsolute ? '是' : '检测到强制词'}`
+        ];
+
+        return { score, level, hint, breakdown };
+      }
+
+      function renderRequestScore(result) {
+        const score = Number(result.score || 0);
+        refs.reqExecScore.textContent = `${score}分`;
+        refs.reqExecFill.style.width = `${score}%`;
+        refs.reqExecHint.textContent = `${result.level}：${result.hint}`;
+        refs.reqExecBreakdown.textContent = result.breakdown.join(' ｜ ');
+      }
+
+      function renderEmotionIntensity() {
+        const value = Math.max(1, Math.min(10, Number(refs.emotionIntensity.value || 5)));
+        appState.emotionIntensity = value;
+        refs.emotionIntensityValue.textContent = `${value} / 10`;
+        if (value >= 8) {
+          refs.emotionIntensityHint.textContent = '当前强度较高，建议先降温再沟通。';
+        } else if (value >= 6) {
+          refs.emotionIntensityHint.textContent = '当前强度中高，沟通时放慢语速更有帮助。';
+        } else {
+          refs.emotionIntensityHint.textContent = '当前强度可沟通，继续保持事实+感受表达。';
+        }
+      }
+
       function setBadge(el, status, label) {
         el.textContent = label;
         el.classList.remove('ok', 'warn', 'bad');
@@ -1736,6 +2079,7 @@
           request: refs.request.value.trim(),
           customFeeling: refs.customFeeling.value.trim(),
           customNeed: refs.customNeed.value.trim(),
+          emotionIntensity: Math.max(1, Math.min(10, Number(refs.emotionIntensity.value || appState.emotionIntensity || 5))),
           selectedFeelings: getSelectedValues('feelingChips'),
           selectedNeeds: getSelectedValues('needChips')
         };
@@ -1747,6 +2091,7 @@
         refs.request.value = state.request || '';
         refs.customFeeling.value = state.customFeeling || '';
         refs.customNeed.value = state.customNeed || '';
+        refs.emotionIntensity.value = String(Math.max(1, Math.min(10, Number(state.emotionIntensity || appState.emotionIntensity || 5))));
         setSelectedChips('feelingChips', state.selectedFeelings || []);
         setSelectedChips('needChips', state.selectedNeeds || []);
       }
@@ -1779,6 +2124,8 @@
       }
 
       function updateAll() {
+        renderEmotionIntensity();
+
         const obvResult = checkObservation(refs.observation.value);
         setBadge(refs.obvBadge, obvResult.status, obvResult.label);
         refs.obvHint.textContent = obvResult.hint;
@@ -1786,6 +2133,9 @@
         const reqResult = checkRequest(refs.request.value);
         setBadge(refs.reqBadge, reqResult.status, reqResult.label);
         refs.reqHint.textContent = reqResult.hint;
+        const reqScore = scoreRequestExecutability(refs.request.value);
+        appState.requestScore = reqScore;
+        renderRequestScore(reqScore);
 
         const result = buildSentence();
         refs.resultText.textContent = result.sentence;
@@ -1798,8 +2148,8 @@
         if (!refs.request.value.trim()) missing.push('请求');
 
         refs.resultTiny.textContent = missing.length
-          ? `还可以补充：${missing.join(' / ')}。`
-          : '四步完整，可以直接用于表达。';
+          ? `还可以补充：${missing.join(' / ')}。当前情绪强度 ${appState.emotionIntensity}/10。`
+          : `四步完整，可以直接用于表达。当前情绪强度 ${appState.emotionIntensity}/10。`;
 
         const complete = missing.length === 0;
         if (complete && !appState.completionCounted) {
@@ -2002,12 +2352,15 @@
           bSentence: result.sentence,
           echo: refs.echoInput.value.trim()
         });
+        const owner = getSpeaker(refs.speakerB, 'B');
+        const autoDue = new Date(Date.now() + 2 * 86400 * 1000).toISOString().slice(0, 10);
+        addRepairAction(result.requestText, owner, autoDue, roundNo);
         bumpMetric('roundSuccess');
         appState.round.phase = 'A_FILL';
         appState.round.snapshot = null;
         refs.echoInput.value = '';
         clearForm();
-        refs.roundHint.textContent = '本回合已完成。下一轮可继续由 A 开始。';
+        refs.roundHint.textContent = '本回合已完成，并已自动生成 1 条修复行动。';
         refreshRoundUi();
       }
 
@@ -2342,6 +2695,11 @@
             roomId: refs.roomIdInput.value,
             roomName: refs.roomNameInput.value
           },
+          repairDraft: {
+            action: refs.repairActionInput.value,
+            owner: refs.repairOwnerSelect.value,
+            dueDate: refs.repairDueDateInput.value
+          },
           at: Date.now()
         };
       }
@@ -2385,6 +2743,10 @@
         const room = rawDraft.room || {};
         refs.roomIdInput.value = room.roomId || '';
         refs.roomNameInput.value = room.roomName || '';
+        const repairDraft = rawDraft.repairDraft || {};
+        refs.repairActionInput.value = repairDraft.action || '';
+        refs.repairOwnerSelect.value = repairDraft.owner || '双方';
+        refs.repairDueDateInput.value = repairDraft.dueDate || '';
         renderTemplateLibrary();
         refreshRoundUi();
         updateAll();
@@ -2462,6 +2824,7 @@
           metrics: normalizeMetrics(rawData.metrics),
           history: normalizeHistoryList(rawData.history),
           todos: Array.isArray(rawData.todos) ? rawData.todos.slice(0, 200) : [],
+          repairs: Array.isArray(rawData.repairs) ? rawData.repairs.slice(0, 200) : [],
           customWords: rawData.customWords || { feelings: [], needs: [] },
           favoriteCombos: Array.isArray(rawData.favoriteCombos) ? rawData.favoriteCombos.slice(0, 50) : [],
           templateFavorites: Array.isArray(rawData.templateFavorites) ? rawData.templateFavorites.slice(0, 80) : [],
@@ -2479,6 +2842,7 @@
           metrics: normalizeMetrics(appState.metrics),
           history: normalizeHistoryList(appState.history),
           todos: appState.todos,
+          repairs: appState.repairs,
           customWords: appState.customWords,
           favoriteCombos: appState.favoriteCombos,
           templateFavorites: appState.templateFavorites,
@@ -2496,6 +2860,8 @@
       function exportReviewReport() {
         const done = appState.todos.filter((item) => item.done).length;
         const open = Math.max(0, appState.todos.length - done);
+        const repairDone = appState.repairs.filter((item) => item.done).length;
+        const repairOpen = Math.max(0, appState.repairs.length - repairDone);
         const lines = [
           '# NVC 对话复盘报告',
           '',
@@ -2508,12 +2874,17 @@
           `- 回合成功：${appState.metrics.roundSuccess}`,
           `- 待办进行中：${open}`,
           `- 待办已完成：${done}`,
+          `- 修复行动待做：${repairOpen}`,
+          `- 修复行动已完成：${repairDone}`,
           '',
           '## 最近 10 条回合记录',
           ...appState.history.slice(0, 10).map((item, idx) => `- ${idx + 1}. ${item.createdAt || ''}｜A:${item.aSentence || ''}｜B:${item.bSentence || ''}`),
           '',
           '## 待办清单',
-          ...appState.todos.slice(0, 20).map((item, idx) => `- ${idx + 1}. [${item.done ? 'x' : ' '}] ${item.text} ${item.dueDate ? `(截止 ${item.dueDate})` : ''}`)
+          ...appState.todos.slice(0, 20).map((item, idx) => `- ${idx + 1}. [${item.done ? 'x' : ' '}] ${item.text} ${item.dueDate ? `(截止 ${item.dueDate})` : ''}`),
+          '',
+          '## 修复行动追踪',
+          ...appState.repairs.slice(0, 20).map((item, idx) => `- ${idx + 1}. [${item.done ? 'x' : ' '}] ${item.action}（执行人：${item.owner}${item.dueDate ? `，截止 ${item.dueDate}` : ''}${item.roundNo ? `，第${item.roundNo}轮` : ''}）`)
         ];
         const blob = new Blob([lines.join('\n')], { type: 'text/markdown;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -2544,6 +2915,10 @@
         appState.todos = Array.isArray(imported.todos) ? imported.todos : [];
         saveTodos();
         renderTodoList();
+
+        appState.repairs = Array.isArray(imported.repairs) ? imported.repairs : [];
+        saveRepairs();
+        renderRepairList();
 
         appState.customWords = imported.customWords && typeof imported.customWords === 'object' ? imported.customWords : { feelings: [], needs: [] };
         saveCustomWords();
@@ -3160,7 +3535,7 @@
       }
 
       function attachEvents() {
-        [refs.observation, refs.request, refs.customFeeling, refs.customNeed, refs.speakerA, refs.speakerB, refs.echoInput].forEach((el) => {
+        [refs.observation, refs.request, refs.customFeeling, refs.customNeed, refs.emotionIntensity, refs.speakerA, refs.speakerB, refs.echoInput].forEach((el) => {
           el.addEventListener('input', updateAll);
         });
 
@@ -3224,7 +3599,7 @@
           applyScenario(template);
           refs.shareHint.textContent = `已填充收藏模板：${template.title}`;
         });
-        [refs.privacyOneTime, refs.privacyMaxViews, refs.privacyPin, refs.renewDays, refs.roomIdInput, refs.roomNameInput].forEach((el) => {
+        [refs.privacyOneTime, refs.privacyMaxViews, refs.privacyPin, refs.renewDays, refs.roomIdInput, refs.roomNameInput, refs.repairActionInput, refs.repairOwnerSelect, refs.repairDueDateInput].forEach((el) => {
           el.addEventListener('input', scheduleDraftSave);
         });
         refs.roomJoinBtn.addEventListener('click', joinRoom);
@@ -3267,6 +3642,20 @@
           refs.todoTextInput.value = '';
           refs.shareHint.textContent = '已新增待办。';
         });
+        refs.repairAddBtn.addEventListener('click', () => {
+          const ok = addRepairAction(
+            refs.repairActionInput.value,
+            refs.repairOwnerSelect.value,
+            refs.repairDueDateInput.value
+          );
+          if (!ok) {
+            refs.shareHint.textContent = '请输入修复行动内容。';
+            return;
+          }
+          refs.repairActionInput.value = '';
+          refs.shareHint.textContent = '已新增修复行动。';
+        });
+        refs.repairFromRoundBtn.addEventListener('click', addRepairFromRound);
         refs.todoList.addEventListener('click', (event) => {
           const toggle = event.target.closest('[data-todo-toggle]');
           if (toggle) {
@@ -3283,6 +3672,24 @@
             appState.todos = appState.todos.filter((item) => item.id !== remove.dataset.todoRemove);
             saveTodos();
             renderTodoList();
+          }
+        });
+        refs.repairList.addEventListener('click', (event) => {
+          const toggle = event.target.closest('[data-repair-toggle]');
+          if (toggle) {
+            const id = toggle.dataset.repairToggle;
+            const hit = appState.repairs.find((item) => item.id === id);
+            if (!hit) return;
+            hit.done = !hit.done;
+            saveRepairs();
+            renderRepairList();
+            return;
+          }
+          const remove = event.target.closest('[data-repair-remove]');
+          if (remove) {
+            appState.repairs = appState.repairs.filter((item) => item.id !== remove.dataset.repairRemove);
+            saveRepairs();
+            renderRepairList();
           }
         });
         refs.saveComboBtn.addEventListener('click', saveCurrentCombo);
@@ -3330,6 +3737,7 @@
         renderCustomWords();
         renderComboList();
         renderTodoList();
+        renderRepairList();
         attachEvents();
         setupInstallPrompt();
         setupCaptcha();

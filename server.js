@@ -113,11 +113,13 @@ function sanitizeState(rawState) {
   if (!rawState || typeof rawState !== 'object') {
     return null;
   }
+  const emotionIntensity = Math.max(1, Math.min(10, Number(rawState.emotionIntensity || 5)));
   return {
     observation: String(rawState.observation || '').slice(0, 1200),
     request: String(rawState.request || '').slice(0, 1200),
     customFeeling: String(rawState.customFeeling || '').slice(0, 300),
     customNeed: String(rawState.customNeed || '').slice(0, 300),
+    emotionIntensity,
     selectedFeelings: Array.isArray(rawState.selectedFeelings) ? rawState.selectedFeelings.slice(0, 6).map((v) => String(v).slice(0, 20)) : [],
     selectedNeeds: Array.isArray(rawState.selectedNeeds) ? rawState.selectedNeeds.slice(0, 6).map((v) => String(v).slice(0, 20)) : []
   };
