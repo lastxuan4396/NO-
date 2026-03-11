@@ -131,3 +131,10 @@ npx playwright install chromium
 - 请只使用最小权限 token。
 - 若 token 曾在聊天或截图中暴露，务必立即 **Revoke 并重建**。
 - 建议开启 Render 告警并配合 Sentry 监控。
+
+## GitHub Positioning
+
+- Suggested description: `NVC couple communication app with short links, collaboration, privacy controls, and PWA support.`
+- Suggested topics: `nvc`, `relationship-tool`, `nodejs`, `pwa`, `postgres`, `websocket`
+- Metadata notes: see [`docs/repo-metadata.md`](docs/repo-metadata.md)
+
